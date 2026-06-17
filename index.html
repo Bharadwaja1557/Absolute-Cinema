@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Absolute Cinema — A personal moviegoing archive</title>
+  <meta name="description" content="A personal archive of every film watched in a theater. Every ticket, every screening, every memory." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- ===================== HERO ===================== -->
+  <header class="hero" id="top">
+    <div class="hero__beam" aria-hidden="true"></div>
+    <div class="hero__grain" aria-hidden="true"></div>
+
+    <div class="hero__inner">
+      <p class="hero__eyebrow">A personal moviegoing archive</p>
+      <h1 class="hero__title">Absolute&nbsp;Cinema</h1>
+      <p class="hero__subtitle">Every ticket. Every screening. Every memory.</p>
+
+      <dl class="hero__stats" id="hero-stats" aria-label="Archive overview">
+        <!-- populated by script.js -->
+        <div class="hero__stat"><dt>Films archived</dt><dd>—</dd></div>
+        <div class="hero__stat"><dt>First entry</dt><dd>—</dd></div>
+        <div class="hero__stat"><dt>Latest entry</dt><dd>—</dd></div>
+      </dl>
+    </div>
+
+    <div class="hero__scroll" aria-hidden="true">
+      <span>The archive</span>
+    </div>
+  </header>
+
+  <!-- ===================== SEARCH ===================== -->
+  <div class="searchbar" id="searchbar">
+    <div class="searchbar__inner">
+      <label class="search" for="search-input">
+        <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" />
+          <line x1="16.5" y1="16.5" x2="21" y2="21" />
+        </svg>
+        <input
+          type="search"
+          id="search-input"
+          class="search__input"
+          placeholder="Search by title, theater, or city"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Search the archive by title, theater, or city"
+        />
+      </label>
+      <p class="searchbar__count" id="result-count" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <main>
+    <!-- ===================== TIMELINE ===================== -->
+    <section class="timeline" id="timeline" aria-label="Films by year">
+      <div class="loading" id="loading">
+        <span class="loading__reel" aria-hidden="true"></span>
+        Loading the archive…
+      </div>
+    </section>
+
+    <!-- ===================== STATISTICS ===================== -->
+    <section class="stats" id="stats" aria-label="By the numbers" hidden>
+      <div class="stats__inner">
+        <p class="section-eyebrow">By the numbers</p>
+        <h2 class="stats__heading">A record, counted</h2>
+        <div class="stats__grid" id="stats-grid"><!-- populated --></div>
+        <div class="peryear" id="peryear" aria-label="Films per year"><!-- populated --></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p class="footer__mark">Absolute Cinema</p>
+    <p class="footer__note">A hand-kept archive. Updated by commit.</p>
+    <a class="footer__top" href="#top">Back to the top</a>
+  </footer>
+
+  <!-- Data is loaded as a script so the site works even when index.html is
+       opened directly from disk (file://), where fetch() is blocked.
+       Edit your archive in data/movies.js. -->
+  <script src="data/movies.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
