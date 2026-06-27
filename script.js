@@ -1,195 +1,131 @@
 /* =========================================================
-   ABSOLUTE CINEMA — script.js
-   Loads data/movies.json and renders the whole archive.
-   No frameworks, no build step. Plain ES modules-free JS.
+   ABSOLUTE CINEMA — script.js (remastered)
+   Poster gallery + search + year/language filters + sort.
+   Reads window.ACMovies (data/movies.js); falls back to
+   fetching data/movies.json when served over http.
    ========================================================= */
 
 (function () {
   "use strict";
 
   /* ---------------------------- State ---------------------------- */
-  var ALL_MOVIES = [];
+  var ALL = [];
+  var state = { q: "", year: "all", lang: "all", dir: "desc" };
 
-  /* ------------------------- DOM helpers ------------------------- */
-  var $ = function (sel) { return document.querySelector(sel); };
+  /* ------------------------- Helpers ----------------------------- */
+  function $(s) { return document.querySelector(s); }
 
-  function escapeHTML(str) {
+  function esc(str) {
     return String(str == null ? "" : str)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
-  /* -------------------------- Formatters ------------------------- */
-  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-  // Parse "YYYY-MM-DD" safely (avoids timezone shifts of new Date(str)).
   function parseDate(str) {
     var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(str || ""));
-    if (!m) return null;
-    return { y: +m[1], mo: +m[2], d: +m[3] };
+    return m ? { y: +m[1], mo: +m[2], d: +m[3] } : null;
   }
-
-  function watchedYear(movie) {
-    var p = parseDate(movie.watchedDate);
-    return p ? p.y : (parseInt(movie.year, 10) || 0);
+  function watchedYear(m) {
+    var p = parseDate(m.watchedDate);
+    return p ? p.y : (parseInt(m.year, 10) || 0);
   }
-
   function formatDate(str) {
     var p = parseDate(str);
-    if (!p) return String(str || "—");
+    if (!p) return str ? String(str) : "Date to add";
     return p.d + " " + (MONTHS[p.mo - 1] || "") + " " + p.y;
   }
 
-  // Deterministic faux ticket serial from the movie fields.
-  function serial(movie) {
-    var base = (movie.title || "") + (movie.watchedDate || "") + (movie.theater || "");
-    var h = 0;
-    for (var i = 0; i < base.length; i++) {
-      h = (h * 31 + base.charCodeAt(i)) >>> 0;
-    }
-    var n = (h % 1000000).toString().padStart(6, "0");
-    return "AC-" + n;
-  }
-
-  /* ------------------------- Rendering --------------------------- */
-
-  function heroStats(movies) {
-    var el = $("#hero-stats");
-    if (!movies.length) {
-      el.innerHTML =
-        statBlock("Films archived", "0") +
-        statBlock("First entry", "—") +
-        statBlock("Latest entry", "—");
-      return;
-    }
-    var years = movies.map(watchedYear).filter(Boolean);
-    var first = Math.min.apply(null, years);
-    var last = Math.max.apply(null, years);
-    el.innerHTML =
-      statBlock("Films archived", String(movies.length)) +
-      statBlock("First entry", String(first)) +
-      statBlock("Latest entry", String(last));
-  }
-
-  function statBlock(label, value) {
-    return '<div class="hero__stat"><dt>' + escapeHTML(label) +
-           "</dt><dd>" + escapeHTML(value) + "</dd></div>";
-  }
-
-  // Clapperboard SVG used for the missing-poster fallback.
-  var CLAP_SVG =
-    '<svg class="clap" viewBox="0 0 24 24" aria-hidden="true">' +
+  var CLAP =
+    '<svg class="ph__clap" viewBox="0 0 24 24" aria-hidden="true">' +
     '<rect x="2" y="8" width="20" height="13" rx="1"/>' +
-    '<path d="M2 8 L6 3 L10 7 L14 3 L18 7 L22 3 L22 8 Z"/>' +
-    "</svg>";
+    '<path d="M2 8 L6 3 L10 7 L14 3 L18 7 L22 3 L22 8 Z"/></svg>';
 
-  function posterMarkup(movie) {
-    var rating = (movie.rating != null && movie.rating !== "")
-      ? '<div class="ticket__rating"><b>' + escapeHTML(movie.rating) +
-        "</b><span>/10</span></div>"
-      : "";
-
-    if (movie.poster) {
-      // Real <img> with graceful fallback to the clapperboard placeholder.
-      return (
-        '<div class="ticket__poster">' +
-          rating +
-          '<img src="' + escapeHTML(movie.poster) + '" alt="Poster for ' +
-            escapeHTML(movie.title) + '" loading="lazy" ' +
-            'onerror="ACfallback(this)" data-title="' + escapeHTML(movie.title) + '">' +
-        "</div>"
-      );
-    }
-    return emptyPoster(movie, rating);
-  }
-
-  function emptyPoster(movie, rating) {
+  function placeholder(movie, tags) {
     return (
-      '<div class="ticket__poster ticket__poster--empty">' +
-        rating +
-        CLAP_SVG +
-        '<span class="ph-title">' + escapeHTML(movie.title) + "</span>" +
+      '<div class="film__poster film__poster--empty">' + tags +
+        '<div class="ph">' + CLAP +
+          '<span class="ph__title">' + esc(movie.title) + "</span>" +
+          '<span class="ph__mark">Absolute Cinema</span>' +
+        "</div>" +
       "</div>"
     );
   }
 
-  function row(key, value) {
-    if (value == null || value === "") return "";
-    return '<div class="ticket__row"><span class="k">' + escapeHTML(key) +
-           '</span><span class="v">' + escapeHTML(value) + "</span></div>";
+  function tagsMarkup(movie) {
+    var t = "";
+    if (movie.language) t += '<span class="tag tag--lang">' + esc(movie.language) + "</span>";
+    if (movie.rerelease) t += '<span class="tag tag--rr">Re-release</span>';
+    return t;
   }
 
-  function ticketCard(movie) {
-    var notes = movie.notes
-      ? '<p class="ticket__notes">' + escapeHTML(movie.notes) + "</p>"
-      : "";
-
-    var place = [movie.theater, movie.city].filter(Boolean).join(" · ");
-
+  /* ------------------------- Film card --------------------------- */
+  function card(movie) {
+    var tags = tagsMarkup(movie);
+    var poster;
+    if (movie.poster) {
+      poster =
+        '<div class="film__poster">' + tags +
+          '<img src="' + esc(movie.poster) + '" alt="Poster for ' + esc(movie.title) +
+            '" loading="lazy" data-title="' + esc(movie.title) + '" onerror="ACfallback(this)">' +
+        "</div>";
+    } else {
+      poster = placeholder(movie, tags);
+    }
     return (
-      '<article class="ticket reveal" tabindex="0">' +
-        posterMarkup(movie) +
-        '<div class="ticket__tear" aria-hidden="true"></div>' +
-        '<div class="ticket__stub">' +
-          '<h3 class="ticket__title">' + escapeHTML(movie.title) + "</h3>" +
-          '<div class="ticket__rows">' +
-            row("Seen", formatDate(movie.watchedDate)) +
-            (place ? row("At", place) : "") +
-            row("Language", movie.language) +
-            row("Format", movie.format) +
-          "</div>" +
-          notes +
-          '<p class="ticket__serial">' + serial(movie) + " · Admit One</p>" +
+      '<article class="film reveal" tabindex="0">' +
+        poster +
+        '<div class="film__info">' +
+          '<h3 class="film__title">' + esc(movie.title) + "</h3>" +
+          '<p class="film__date">' + formatDate(movie.watchedDate) + "</p>" +
         "</div>" +
       "</article>"
     );
   }
 
-  function renderTimeline(movies) {
-    var mount = $("#timeline");
+  /* ----------------------- Gallery render ------------------------ */
+  function renderGallery(list) {
+    var mount = $("#gallery");
 
-    if (!movies.length) {
+    if (!list.length) {
       mount.innerHTML =
-        '<div class="empty"><strong>No matching tickets.</strong>' +
-        "Try another title, theater, or city.</div>";
+        '<div class="empty"><strong>No films match.</strong>' +
+        "Try a different search or clear the filters.</div>";
       return;
     }
 
-    // Group by watched year.
     var byYear = {};
-    movies.forEach(function (m) {
+    list.forEach(function (m) {
       var y = watchedYear(m);
       (byYear[y] = byYear[y] || []).push(m);
     });
 
-    // Years descending (most recent first).
-    var years = Object.keys(byYear).map(Number).sort(function (a, b) { return b - a; });
+    var years = Object.keys(byYear).map(Number)
+      .sort(function (a, b) { return state.dir === "asc" ? a - b : b - a; });
 
-    var html = years.map(function (y) {
+    mount.innerHTML = years.map(function (y) {
       var group = byYear[y].slice().sort(function (a, b) {
-        return String(b.watchedDate).localeCompare(String(a.watchedDate));
+        var c = String(a.watchedDate).localeCompare(String(b.watchedDate));
+        return state.dir === "asc" ? c : -c;
       });
-      var count = group.length + " film" + (group.length === 1 ? "" : "s");
+      var n = group.length + " film" + (group.length === 1 ? "" : "s");
       return (
         '<div class="year-group">' +
           '<div class="year-head">' +
             '<span class="year-head__num">' + y + "</span>" +
-            '<span class="year-head__count">' + count + "</span>" +
+            '<span class="year-head__count">' + n + "</span>" +
             '<span class="year-head__strip" aria-hidden="true"></span>' +
           "</div>" +
-          '<div class="cards">' + group.map(ticketCard).join("") + "</div>" +
+          '<div class="grid">' + group.map(card).join("") + "</div>" +
         "</div>"
       );
     }).join("");
 
-    mount.innerHTML = html;
     observeReveals();
   }
 
+  /* --------------------------- Stats ----------------------------- */
   function renderStats(movies) {
     var section = $("#stats");
     if (!movies.length) { section.hidden = true; return; }
@@ -197,216 +133,213 @@
 
     var total = movies.length;
 
-    // Average rating (ignore blanks).
-    var rated = movies.filter(function (m) {
-      return m.rating != null && m.rating !== "" && !isNaN(+m.rating);
-    });
-    var avg = rated.length
-      ? (rated.reduce(function (s, m) { return s + +m.rating; }, 0) / rated.length)
-      : null;
+    var langs = {};
+    movies.forEach(function (m) { if (m.language) langs[m.language] = (langs[m.language] || 0) + 1; });
+    var langKeys = Object.keys(langs);
 
-    // Most visited theater.
-    var theaters = {};
-    movies.forEach(function (m) {
-      if (m.theater) theaters[m.theater] = (theaters[m.theater] || 0) + 1;
-    });
-    var topTheater = null, topCount = 0;
-    Object.keys(theaters).forEach(function (t) {
-      if (theaters[t] > topCount) { topCount = theaters[t]; topTheater = t; }
-    });
+    var years = movies.map(watchedYear).filter(Boolean);
+    var first = Math.min.apply(null, years);
+    var last = Math.max.apply(null, years);
 
-    // Distinct cities + years for a little extra texture.
-    var cities = {};
-    movies.forEach(function (m) { if (m.city) cities[m.city] = 1; });
-    var cityCount = Object.keys(cities).length;
+    var rerel = movies.filter(function (m) { return m.rerelease; }).length;
 
-    $("#stats-grid").innerHTML =
+    // optional rating stat (only if any ratings present)
+    var rated = movies.filter(function (m) { return m.rating != null && m.rating !== "" && !isNaN(+m.rating); });
+    var avg = rated.length ? (rated.reduce(function (s, m) { return s + +m.rating; }, 0) / rated.length) : null;
+
+    var cells =
       cell("Films archived", '<span class="accent">' + total + "</span>") +
-      cell("Average rating",
-        avg != null ? avg.toFixed(1) + '<small>out of 10</small>' : "—") +
-      cell("Most visited",
-        topTheater
-          ? escapeHTML(topTheater) + '<small>' + topCount + " visit" +
-            (topCount === 1 ? "" : "s") + "</small>"
-          : "—") +
-      cell("Cities", String(cityCount) +
-        '<small>across the country</small>');
+      cell("Languages", String(langKeys.length)) +
+      cell("Years on record", (first === last ? String(first) : first + "–" + last));
+    cells += avg != null
+      ? cell("Average rating", avg.toFixed(1) + "<small>out of 10</small>")
+      : cell("Re-releases", String(rerel) + "<small>seen on the big screen again</small>");
 
-    // Per-year bars.
+    $("#stats-grid").innerHTML = cells;
+
+    // by language
+    var langPairs = langKeys.map(function (k) { return [k, langs[k]]; })
+      .sort(function (a, b) { return b[1] - a[1]; });
+    $("#bars-lang").innerHTML =
+      '<p class="bars__title">By language</p>' +
+      barRows(langPairs, Math.max.apply(null, langPairs.map(function (p) { return p[1]; })));
+
+    // by year
     var byYear = {};
-    movies.forEach(function (m) {
-      var y = watchedYear(m);
-      byYear[y] = (byYear[y] || 0) + 1;
-    });
-    var years = Object.keys(byYear).map(Number).sort(function (a, b) { return b - a; });
-    var max = Math.max.apply(null, years.map(function (y) { return byYear[y]; }));
+    movies.forEach(function (m) { var y = watchedYear(m); byYear[y] = (byYear[y] || 0) + 1; });
+    var yrPairs = Object.keys(byYear).map(Number).sort(function (a, b) { return b - a; })
+      .map(function (y) { return [String(y), byYear[y]]; });
+    $("#bars-year").innerHTML =
+      '<p class="bars__title">By year</p>' +
+      barRows(yrPairs, Math.max.apply(null, yrPairs.map(function (p) { return p[1]; })));
 
-    $("#peryear").innerHTML = years.map(function (y) {
-      var pct = Math.round((byYear[y] / max) * 100);
-      return (
-        '<div class="peryear__row">' +
-          '<span class="peryear__yr">' + y + "</span>" +
-          '<span class="peryear__track"><span class="peryear__fill" data-pct="' +
-            pct + '"></span></span>' +
-          '<span class="peryear__n">' + byYear[y] + "</span>" +
-        "</div>"
-      );
-    }).join("");
-
-    // Animate the bars once visible.
-    if (!prefersReducedMotion()) {
-      var io = new IntersectionObserver(function (entries) {
-        entries.forEach(function (e) {
-          if (e.isIntersecting) {
-            section.querySelectorAll(".peryear__fill").forEach(function (f) {
-              f.style.width = f.getAttribute("data-pct") + "%";
-            });
-            io.disconnect();
-          }
-        });
-      }, { threshold: 0.2 });
-      io.observe(section);
-    } else {
-      section.querySelectorAll(".peryear__fill").forEach(function (f) {
-        f.style.width = f.getAttribute("data-pct") + "%";
-      });
-    }
+    animateBars(section);
   }
 
   function cell(label, value) {
-    return '<dl class="stat-cell"><dt>' + escapeHTML(label) +
-           "</dt><dd>" + value + "</dd></dl>";
+    return '<dl class="stat-cell"><dt>' + esc(label) + "</dt><dd>" + value + "</dd></dl>";
+  }
+  function barRows(pairs, max) {
+    return pairs.map(function (p) {
+      var pct = Math.round((p[1] / max) * 100);
+      return (
+        '<div class="bar-row">' +
+          '<span class="bar-row__label">' + esc(p[0]) + "</span>" +
+          '<span class="bar-row__track"><span class="bar-row__fill" data-pct="' + pct + '"></span></span>' +
+          '<span class="bar-row__n">' + p[1] + "</span>" +
+        "</div>"
+      );
+    }).join("");
+  }
+  function animateBars(section) {
+    var fills = section.querySelectorAll(".bar-row__fill");
+    if (prefersReduced() || !("IntersectionObserver" in window)) {
+      fills.forEach(function (f) { f.style.width = f.getAttribute("data-pct") + "%"; });
+      return;
+    }
+    var fill = function () { fills.forEach(function (f) { f.style.width = f.getAttribute("data-pct") + "%"; }); };
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { fill(); io.disconnect(); }
+      });
+    }, { threshold: 0, rootMargin: "0px 0px -60px 0px" });
+    io.observe(section);
   }
 
-  /* --------------------------- Search ---------------------------- */
-  function applySearch(query) {
-    var q = query.trim().toLowerCase();
-    var list = ALL_MOVIES;
+  /* ------------------------- Filtering --------------------------- */
+  function apply() {
+    var q = state.q.trim().toLowerCase();
+    var list = ALL.filter(function (m) {
+      if (state.year !== "all" && String(watchedYear(m)) !== state.year) return false;
+      if (state.lang !== "all" && (m.language || "") !== state.lang) return false;
+      if (q) {
+        var hay = (m.title || "") + " " + (m.language || "") + " " +
+                  (m.theater || "") + " " + (m.city || "");
+        if (hay.toLowerCase().indexOf(q) === -1) return false;
+      }
+      return true;
+    });
 
-    if (q) {
-      list = ALL_MOVIES.filter(function (m) {
-        return (
-          String(m.title || "").toLowerCase().indexOf(q) !== -1 ||
-          String(m.theater || "").toLowerCase().indexOf(q) !== -1 ||
-          String(m.city || "").toLowerCase().indexOf(q) !== -1
-        );
-      });
-    }
+    renderGallery(list);
 
-    renderTimeline(list);
-
+    var active = q || state.year !== "all" || state.lang !== "all";
     var countEl = $("#result-count");
-    if (!q) {
-      countEl.textContent = "";
-    } else {
-      countEl.textContent =
-        list.length + " of " + ALL_MOVIES.length + " films";
-    }
+    countEl.textContent = active
+      ? list.length + " of " + ALL.length + " films"
+      : ALL.length + " films · every screening on record";
+    $("#clear-filters").hidden = !active;
+  }
+
+  /* --------------------- Populate filters ------------------------ */
+  function buildFilters(movies) {
+    var years = {}, langs = {};
+    movies.forEach(function (m) {
+      years[watchedYear(m)] = 1;
+      if (m.language) langs[m.language] = 1;
+    });
+
+    var ySel = $("#filter-year");
+    Object.keys(years).map(Number).sort(function (a, b) { return b - a; })
+      .forEach(function (y) {
+        var o = document.createElement("option");
+        o.value = String(y); o.textContent = y; ySel.appendChild(o);
+      });
+
+    var lSel = $("#filter-lang");
+    Object.keys(langs).sort().forEach(function (l) {
+      var o = document.createElement("option");
+      o.value = l; o.textContent = l; lSel.appendChild(o);
+    });
   }
 
   /* ----------------------- Reveal on scroll ---------------------- */
   var revealObserver = null;
-
-  function prefersReducedMotion() {
-    return window.matchMedia &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function prefersReduced() {
+    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   }
-
   function observeReveals() {
     var items = document.querySelectorAll(".reveal:not(.is-in)");
-
-    if (prefersReducedMotion() || !("IntersectionObserver" in window)) {
+    if (prefersReduced() || !("IntersectionObserver" in window)) {
       items.forEach(function (el) { el.classList.add("is-in"); });
       return;
     }
-
     if (!revealObserver) {
       revealObserver = new IntersectionObserver(function (entries) {
         entries.forEach(function (e) {
-          if (e.isIntersecting) {
-            e.target.classList.add("is-in");
-            revealObserver.unobserve(e.target);
-          }
+          if (e.isIntersecting) { e.target.classList.add("is-in"); revealObserver.unobserve(e.target); }
         });
-      }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+      }, { threshold: 0.1, rootMargin: "0px 0px -6% 0px" });
     }
     items.forEach(function (el) { revealObserver.observe(el); });
   }
 
   /* ---------------------- Poster fallback ------------------------ */
-  // Global so the inline onerror handler can reach it.
   window.ACfallback = function (img) {
-    var poster = img.parentNode;        // .ticket__poster
+    var poster = img.parentNode;
     var title = img.getAttribute("data-title") || "";
-    var ratingEl = poster.querySelector(".ticket__rating");
-    var ratingHTML = ratingEl ? ratingEl.outerHTML : "";
-    poster.classList.add("ticket__poster--empty");
-    poster.innerHTML = ratingHTML + CLAP_SVG +
-      '<span class="ph-title">' + escapeHTML(title) + "</span>";
+    var tags = poster.querySelectorAll(".tag");
+    var tagHTML = "";
+    tags.forEach(function (t) { tagHTML += t.outerHTML; });
+    poster.classList.add("film__poster--empty");
+    poster.innerHTML = tagHTML +
+      '<div class="ph">' + CLAP +
+        '<span class="ph__title">' + esc(title) + "</span>" +
+        '<span class="ph__mark">Absolute Cinema</span>' +
+      "</div>";
   };
 
   /* ----------------------------- Boot ---------------------------- */
   function showError(msg) {
-    $("#timeline").innerHTML =
-      '<div class="empty"><strong>The archive could not be opened.</strong>' +
-      escapeHTML(msg) + "</div>";
+    $("#gallery").innerHTML =
+      '<div class="empty"><strong>The archive could not be opened.</strong>' + esc(msg) + "</div>";
   }
 
   function init(movies) {
-    if (!Array.isArray(movies)) {
-      showError("data/movies.json must contain a list of films.");
-      return;
-    }
-    ALL_MOVIES = movies;
+    if (!Array.isArray(movies)) { showError("The data file must contain a list of films."); return; }
+    ALL = movies;
 
-    heroStats(movies);
-    renderTimeline(movies);
+    buildFilters(movies);
     renderStats(movies);
+    apply();
 
-    var input = $("#search-input");
-    var t;
+    var input = $("#search-input"), t;
     input.addEventListener("input", function () {
       clearTimeout(t);
-      t = setTimeout(function () { applySearch(input.value); }, 80);
+      t = setTimeout(function () { state.q = input.value; apply(); }, 70);
     });
 
-    // Animate the hero stats / first cards in.
-    observeReveals();
+    $("#filter-year").addEventListener("change", function () { state.year = this.value; apply(); });
+    $("#filter-lang").addEventListener("change", function () { state.lang = this.value; apply(); });
+
+    var sortBtn = $("#sort-toggle");
+    sortBtn.setAttribute("data-dir", state.dir);
+    sortBtn.addEventListener("click", function () {
+      state.dir = state.dir === "desc" ? "asc" : "desc";
+      sortBtn.setAttribute("data-dir", state.dir);
+      $("#sort-label").textContent = state.dir === "desc" ? "Newest" : "Oldest";
+      apply();
+    });
+
+    $("#clear-filters").addEventListener("click", function () {
+      state.q = ""; state.year = "all"; state.lang = "all";
+      input.value = ""; $("#filter-year").value = "all"; $("#filter-lang").value = "all";
+      apply();
+    });
   }
 
   function load() {
-    // Preferred path: data/movies.js sets window.ACMovies via a <script> tag.
-    // This works everywhere — including opening index.html straight from disk
-    // (file://), where fetch() is blocked by the browser.
-    if (Array.isArray(window.ACMovies)) {
-      init(window.ACMovies);
-      return;
-    }
-
-    // Fallback: fetch the JSON. Works when served over http (GitHub Pages or a
-    // local server), for setups that prefer a plain .json file.
+    if (Array.isArray(window.ACMovies)) { init(window.ACMovies); return; }
     fetch("data/movies.json", { cache: "no-cache" })
-      .then(function (res) {
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        return res.json();
-      })
+      .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
       .then(init)
       .catch(function (err) {
         var fileMode = location.protocol === "file:";
-        showError(
-          fileMode
-            ? "Opening from disk needs the data/movies.js file (a script the " +
-              "browser is allowed to load). If it's missing, run a local " +
-              "server instead: python3 -m http.server"
-            : "Make sure data/movies.js or data/movies.json exists. (" +
-              err.message + ")"
-        );
+        showError(fileMode
+          ? "Opening from disk needs data/movies.js. If it's missing, run a local server: python3 -m http.server"
+          : "Make sure data/movies.js or data/movies.json exists. (" + err.message + ")");
       });
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", load);
-  } else {
-    load();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", load);
+  else load();
 })();

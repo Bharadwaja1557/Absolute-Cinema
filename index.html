@@ -12,58 +12,60 @@
 
   <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-  <!-- ===================== HERO ===================== -->
-  <header class="hero" id="top">
-    <div class="hero__beam" aria-hidden="true"></div>
-    <div class="hero__grain" aria-hidden="true"></div>
+<body id="top">
 
-    <div class="hero__inner">
-      <p class="hero__eyebrow">A personal moviegoing archive</p>
-      <h1 class="hero__title">Absolute&nbsp;Cinema</h1>
-      <p class="hero__subtitle">Every ticket. Every screening. Every memory.</p>
-
-      <dl class="hero__stats" id="hero-stats" aria-label="Archive overview">
-        <!-- populated by script.js -->
-        <div class="hero__stat"><dt>Films archived</dt><dd>—</dd></div>
-        <div class="hero__stat"><dt>First entry</dt><dd>—</dd></div>
-        <div class="hero__stat"><dt>Latest entry</dt><dd>—</dd></div>
-      </dl>
+  <!-- ===================== STICKY TOPBAR ===================== -->
+  <header class="topbar">
+    <div class="topbar__brandrow">
+      <a class="brand" href="#top" aria-label="Absolute Cinema — home">
+        <span class="brand__mark" aria-hidden="true"></span>
+        <span class="brand__name">Absolute Cinema</span>
+      </a>
     </div>
 
-    <div class="hero__scroll" aria-hidden="true">
-      <span>The archive</span>
+    <div class="topbar__controls">
+      <label class="search" for="search-input">
+        <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" /><line x1="16.5" y1="16.5" x2="21" y2="21" />
+        </svg>
+        <input id="search-input" class="search__input" type="search"
+          placeholder="Search films…" autocomplete="off" spellcheck="false"
+          aria-label="Search films by title" />
+      </label>
+
+      <div class="filters">
+        <div class="select">
+          <select id="filter-year" aria-label="Filter by year">
+            <option value="all">All years</option>
+          </select>
+        </div>
+        <div class="select">
+          <select id="filter-lang" aria-label="Filter by language">
+            <option value="all">All languages</option>
+          </select>
+        </div>
+        <button id="sort-toggle" class="sortbtn" type="button"
+          aria-label="Toggle sort order">
+          <span class="sortbtn__icon" aria-hidden="true">↓</span>
+          <span id="sort-label">Newest</span>
+        </button>
+      </div>
     </div>
   </header>
 
-  <!-- ===================== SEARCH ===================== -->
-  <div class="searchbar" id="searchbar">
-    <div class="searchbar__inner">
-      <label class="search" for="search-input">
-        <svg class="search__icon" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="11" cy="11" r="7" />
-          <line x1="16.5" y1="16.5" x2="21" y2="21" />
-        </svg>
-        <input
-          type="search"
-          id="search-input"
-          class="search__input"
-          placeholder="Search by title, theater, or city"
-          autocomplete="off"
-          spellcheck="false"
-          aria-label="Search the archive by title, theater, or city"
-        />
-      </label>
-      <p class="searchbar__count" id="result-count" aria-live="polite"></p>
-    </div>
-  </div>
-
   <main>
-    <!-- ===================== TIMELINE ===================== -->
-    <section class="timeline" id="timeline" aria-label="Films by year">
+    <!-- meta line: count + clear -->
+    <div class="gallery-meta">
+      <p class="gallery-meta__count" id="result-count" aria-live="polite">—</p>
+      <button class="gallery-meta__clear" id="clear-filters" type="button" hidden>
+        Clear filters
+      </button>
+    </div>
+
+    <!-- ===================== GALLERY ===================== -->
+    <section class="gallery" id="gallery" aria-label="Films by year">
       <div class="loading" id="loading">
-        <span class="loading__reel" aria-hidden="true"></span>
-        Loading the archive…
+        <span class="loading__reel" aria-hidden="true"></span> Loading the archive…
       </div>
     </section>
 
@@ -71,22 +73,21 @@
     <section class="stats" id="stats" aria-label="By the numbers" hidden>
       <div class="stats__inner">
         <p class="section-eyebrow">By the numbers</p>
-        <h2 class="stats__heading">A record, counted</h2>
-        <div class="stats__grid" id="stats-grid"><!-- populated --></div>
-        <div class="peryear" id="peryear" aria-label="Films per year"><!-- populated --></div>
+        <h2 class="stats__heading">The archive, counted</h2>
+        <div class="stats__grid" id="stats-grid"></div>
+        <div class="bars" id="bars-lang" aria-label="Films by language"></div>
+        <div class="bars" id="bars-year" aria-label="Films by year"></div>
       </div>
     </section>
   </main>
 
   <footer class="footer">
     <p class="footer__mark">Absolute Cinema</p>
-    <p class="footer__note">A hand-kept archive. Updated by commit.</p>
+    <p class="footer__note">Every ticket. Every screening. Every memory.</p>
     <a class="footer__top" href="#top">Back to the top</a>
   </footer>
 
-  <!-- Data is loaded as a script so the site works even when index.html is
-       opened directly from disk (file://), where fetch() is blocked.
-       Edit your archive in data/movies.js. -->
+  <!-- Data is loaded as a script so the site works even from disk (file://). -->
   <script src="data/movies.js"></script>
   <script src="script.js"></script>
 </body>
