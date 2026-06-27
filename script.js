@@ -61,6 +61,12 @@
   }
 
   /* ------------------------- Film card --------------------------- */
+  function dateLine(movie) {
+    if (movie.watchedDate) return formatDate(movie.watchedDate);
+    var y = parseInt(movie.year, 10);
+    return y ? String(y) : "";
+  }
+
   function card(movie) {
     var tags = tagsMarkup(movie);
     var poster;
@@ -68,17 +74,18 @@
       poster =
         '<div class="film__poster">' + tags +
           '<img src="' + esc(movie.poster) + '" alt="Poster for ' + esc(movie.title) +
-            '" loading="lazy" data-title="' + esc(movie.title) + '" onerror="ACfallback(this)">' +
+            '" loading="lazy" data-title="' + esc(movie.title) + '" onerror="ACposterError(this)">' +
         "</div>";
     } else {
       poster = placeholder(movie, tags);
     }
+    var dl = dateLine(movie);
     return (
       '<article class="film reveal" tabindex="0">' +
         poster +
         '<div class="film__info">' +
           '<h3 class="film__title">' + esc(movie.title) + "</h3>" +
-          '<p class="film__date">' + formatDate(movie.watchedDate) + "</p>" +
+          (dl ? '<p class="film__date">' + esc(dl) + "</p>" : "") +
         "</div>" +
       "</article>"
     );
@@ -106,7 +113,10 @@
 
     mount.innerHTML = years.map(function (y) {
       var group = byYear[y].slice().sort(function (a, b) {
-        var c = String(a.watchedDate).localeCompare(String(b.watchedDate));
+        var ka = a.watchedDate || (a.year + "-12-31");
+        var kb = b.watchedDate || (b.year + "-12-31");
+        var c = String(ka).localeCompare(String(kb));
+        if (c === 0) c = String(a.title).localeCompare(String(b.title));
         return state.dir === "asc" ? c : -c;
       });
       var n = group.length + " film" + (group.length === 1 ? "" : "s");
@@ -273,7 +283,18 @@
     items.forEach(function (el) { revealObserver.observe(el); });
   }
 
-  /* ---------------------- Poster fallback ------------------------ */
+  /* ---------------------- Poster handling ------------------------ */
+  // Posters may be .jpg or .png. Try the other extension once, then fall back
+  // to the designed placeholder.
+  window.ACposterError = function (img) {
+    var src = img.getAttribute("src") || "";
+    if (!img.getAttribute("data-ext-tried")) {
+      if (/\.jpg$/i.test(src)) { img.setAttribute("data-ext-tried", "1"); img.src = src.replace(/\.jpg$/i, ".png"); return; }
+      if (/\.png$/i.test(src)) { img.setAttribute("data-ext-tried", "1"); img.src = src.replace(/\.png$/i, ".jpg"); return; }
+    }
+    ACfallback(img);
+  };
+
   window.ACfallback = function (img) {
     var poster = img.parentNode;
     var title = img.getAttribute("data-title") || "";
@@ -329,15 +350,8 @@
 
   function load() {
     if (Array.isArray(window.ACMovies)) { init(window.ACMovies); return; }
-    fetch("data/movies.json", { cache: "no-cache" })
-      .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
-      .then(init)
-      .catch(function (err) {
-        var fileMode = location.protocol === "file:";
-        showError(fileMode
-          ? "Opening from disk needs data/movies.js. If it's missing, run a local server: python3 -m http.server"
-          : "Make sure data/movies.js or data/movies.json exists. (" + err.message + ")");
-      });
+    showError("data/movies.js is missing or malformed. It should define " +
+              "window.ACMovies = [ ... ].");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", load);
