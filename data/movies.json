@@ -11,14 +11,14 @@
     "year": 2022,
     "watchedDate": "2022-07-08",
     "language": "English",
-    "poster": "posters/Thor_Love_and_Thunder(2022).png"
+    "poster": "posters/ThorLoveandThunder(2022).png"
   },
   {
     "title": "Captain America: Brave New World",
     "year": 2025,
     "watchedDate": "2025-02-14",
     "language": "English",
-    "poster": "posters/Captain_America_Brave_New_World(2025).jpg"
+    "poster": "posters/CaptainAmericaBraveNewWorld(2025).jpg"
   },
   {
     "title": "Khaleja",
@@ -34,7 +34,7 @@
     "watchedDate": "2025-01-11",
     "language": "Telugu",
     "rerelease": true,
-    "poster": "posters/Seethamma_Vakitlo_Sirimalle_Chettu(2013).jpg"
+    "poster": "posters/SeethammaVakitloSirimalleChettu(2013).jpg"
   },
   {
     "title": "Shakti",
@@ -48,14 +48,14 @@
     "year": 2015,
     "watchedDate": "2015-07-10",
     "language": "Telugu",
-    "poster": "posters/Baahubali_The_Beginning(2015).jpg"
+    "poster": "posters/BaahubaliTheBeginning(2015).jpg"
   },
   {
     "title": "Baahubali 2: The Conclusion",
     "year": 2017,
     "watchedDate": "2017-04-28",
     "language": "Telugu",
-    "poster": "posters/Baahubali_2_The_Conclusion(2017).jpg"
+    "poster": "posters/Baahubali2TheConclusion(2017).jpg"
   },
   {
     "title": "Baahubali: The Epic",
@@ -63,7 +63,7 @@
     "watchedDate": "2025-10-31",
     "language": "Telugu",
     "rerelease": true,
-    "poster": "posters/Baahubali_The_Epic(2025).jpg"
+    "poster": "posters/BaahubaliTheEpic(2025).jpg"
   },
   {
     "title": "Kantara",
@@ -77,14 +77,14 @@
     "year": 2025,
     "watchedDate": "2025-10-02",
     "language": "Kannada",
-    "poster": "posters/Kantara_Chapter_1(2025).jpg"
+    "poster": "posters/KantaraChapter1(2025).jpg"
   },
   {
     "title": "Miss Shetty Mr Polishetty",
     "year": 2023,
     "watchedDate": "2023-09-07",
     "language": "Telugu",
-    "poster": "posters/Miss-Shetty-Mr-Polishetty(2023).jpg"
+    "poster": "posters/MissShettyMrPolishetty(2023).jpg"
   },
   {
     "title": "Rachcha",
@@ -98,6 +98,6 @@
     "year": 2021,
     "watchedDate": "2021-12-25",
     "language": "Telugu",
-    "poster": "posters/Manchi-Rojulochaie(2021).jpg"
+    "poster": "posters/ManchiRojulochaie(2021).jpg"
   }
 ]
