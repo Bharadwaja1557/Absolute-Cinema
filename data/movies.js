@@ -176,7 +176,7 @@ window.ACMovies = [
     "watchedDate": "2024-09-02",
     "language": "Telugu",
     "format": "2D",
-    "theatre": "Vinayaka",
+    "theatre": "Sujatha",
     "city": "Pulivendula",
     "poster": "posters/Telugu/Kushi_(2001).webp",
     "rerelease": true
@@ -187,7 +187,7 @@ window.ACMovies = [
     "watchedDate": "2024-08-31",
     "language": "Telugu",
     "format": "2D",
-    "theatre": "Old theatre",
+    "theatre": "Sujatha",
     "city": "Pulivendula",
     "poster": "posters/Telugu/Committee_Kurrollu_(2024).webp"
   },
@@ -227,7 +227,7 @@ window.ACMovies = [
     "watchedDate": "2023-09-08",
     "language": "Hindi",
     "format": "2D",
-    "theatre": "Vinayaka",
+    "theatre": "Sujatha",
     "city": "Pulivendula",
     "poster": "posters/Hindi/Jawan_(2023).webp"
   },
@@ -237,7 +237,7 @@ window.ACMovies = [
     "watchedDate": "2023-09-02",
     "language": "Telugu",
     "format": "2D",
-    "theatre": "Old theatre",
+    "theatre": "Sujatha",
     "city": "Pulivendula",
     "poster": "posters/Telugu/Kushi_(2023).webp"
   },
@@ -317,7 +317,7 @@ window.ACMovies = [
     "watchedDate": "2022-10-16",
     "language": "Kannada",
     "format": "2D",
-    "theatre": "Old theatre",
+    "theatre": "Sujatha",
     "city": "Pulivendula",
     "poster": "posters/Kannada/Kantara_(2022).webp"
   },

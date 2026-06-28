@@ -1,8 +1,8 @@
 /* =========================================================
-   ABSOLUTE CINEMA — script.js (remastered)
-   Poster gallery + search + year/language filters + sort.
-   Reads window.ACMovies (data/movies.js); falls back to
-   fetching data/movies.json when served over http.
+   ABSOLUTE CINEMA — script-new.js (v2 "Reel")
+   Hero spotlight · ambient poster glow ·
+   detail lightbox · search / filter / sort · stats.
+   Reads window.ACMovies (data/movies.js).
    ========================================================= */
 
 (function () {
@@ -10,6 +10,7 @@
 
   /* ---------------------------- State ---------------------------- */
   var ALL = [];
+  var CURRENT = [];           // currently rendered (post-filter) list
   var state = { q: "", year: "all", lang: "all", dir: "desc" };
 
   /* ------------------------- Helpers ----------------------------- */
@@ -22,6 +23,7 @@
   }
 
   var MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var MONTHS_LONG = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
   function parseDate(str) {
     var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(str || ""));
@@ -36,73 +38,84 @@
     if (!p) return str ? String(str) : "Date to add";
     return p.d + " " + (MONTHS[p.mo - 1] || "") + " " + p.y;
   }
+  function formatDateLong(str) {
+    var p = parseDate(str);
+    if (!p) return str ? String(str) : "Date to add";
+    return p.d + " " + (MONTHS_LONG[p.mo - 1] || "") + " " + p.y;
+  }
 
   var CLAP =
     '<svg class="ph__clap" viewBox="0 0 24 24" aria-hidden="true">' +
     '<rect x="2" y="8" width="20" height="13" rx="1"/>' +
     '<path d="M2 8 L6 3 L10 7 L14 3 L18 7 L22 3 L22 8 Z"/></svg>';
 
-  function placeholder(movie, tags) {
-    return (
-      '<div class="film__poster film__poster--empty">' + tags +
-        '<div class="ph">' + CLAP +
-          '<span class="ph__title">' + esc(movie.title) + "</span>" +
-          '<span class="ph__mark">Absolute Cinema</span>' +
-        "</div>" +
-      "</div>"
-    );
-  }
-
-  function tagsMarkup(movie) {
-    var t = "";
-    if (movie.format && String(movie.format).trim().toUpperCase() !== "2D")
-      t += '<span class="tag tag--fmt">' + esc(movie.format) + "</span>";
-    if (movie.language) t += '<span class="tag tag--lang">' + esc(movie.language) + "</span>";
-    if (movie.rerelease) t += '<span class="tag tag--rr">Re-release</span>';
-    return t;
-  }
-
   var PIN =
     '<svg class="pin" viewBox="0 0 24 24" aria-hidden="true">' +
     '<path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12z"/>' +
     '<circle cx="12" cy="9" r="2.4"/></svg>';
 
-  function venueLine(movie) {
-    var place = [movie.theater, movie.city].filter(Boolean).join(", ");
-    if (!place) return "";
-    return '<p class="film__venue">' + PIN + "<span>" + esc(place) + "</span></p>";
+  function isFmt(movie) {
+    return movie.format && String(movie.format).trim().toUpperCase() !== "2D";
   }
 
-  /* ------------------------- Film card --------------------------- */
+  function tagsMarkup(movie) {
+    var t = "";
+    if (isFmt(movie)) t += '<span class="tag tag--fmt">' + esc(movie.format) + "</span>";
+    if (movie.language) t += '<span class="tag tag--lang">' + esc(movie.language) + "</span>";
+    if (movie.rerelease) t += '<span class="tag tag--rr">Re-release</span>';
+    return t;
+  }
+
+  function placeholderInner(movie) {
+    return (
+      '<div class="ph">' + CLAP +
+        '<span class="ph__title">' + esc(movie.title) + "</span>" +
+        '<span class="ph__mark">Absolute Cinema</span>' +
+      "</div>"
+    );
+  }
+
   function dateLine(movie) {
     if (movie.watchedDate) return formatDate(movie.watchedDate);
     var y = parseInt(movie.year, 10);
     return y ? String(y) : "";
   }
 
-  function card(movie) {
+  /* ------------------------- Film card --------------------------- */
+  function card(movie, idx) {
     var tags = tagsMarkup(movie);
-    var poster;
+    var posterInner;
     if (movie.poster) {
-      poster =
+      var bg = esc(movie.poster);
+      posterInner =
+        '<span class="film__glow" style="background-image:url(\'' + bg + '\')"></span>' +
         '<div class="film__poster">' + tags +
-          '<img src="' + esc(movie.poster) + '" alt="Poster for ' + esc(movie.title) +
+          '<img src="' + bg + '" alt="Poster for ' + esc(movie.title) +
             '" loading="lazy" data-title="' + esc(movie.title) + '" onerror="ACposterError(this)">' +
+          '<span class="film__view">View ⤢</span>' +
         "</div>";
     } else {
-      poster = placeholder(movie, tags);
+      posterInner =
+        '<div class="film__poster film__poster--empty">' + tags + placeholderInner(movie) + "</div>";
     }
     var dl = dateLine(movie);
+    var place = uniqueVenue(movie);
     return (
-      '<article class="film reveal" tabindex="0">' +
-        poster +
+      '<button class="film reveal" type="button" data-idx="' + idx + '" ' +
+        'aria-label="View details for ' + esc(movie.title) + '">' +
+        posterInner +
         '<div class="film__info">' +
           '<h3 class="film__title">' + esc(movie.title) + "</h3>" +
           (dl ? '<p class="film__date">' + esc(dl) + "</p>" : "") +
-          venueLine(movie) +
+          (place ? '<p class="film__venue">' + PIN + "<span>" + esc(place) + "</span></p>" : "") +
         "</div>" +
-      "</article>"
+      "</button>"
     );
+  }
+
+  function uniqueVenue(movie) {
+    var theatre = movie.theatre || movie.theater || "";
+    return [theatre, movie.city].filter(Boolean).join(", ");
   }
 
   /* ----------------------- Gallery render ------------------------ */
@@ -125,6 +138,7 @@
     var years = Object.keys(byYear).map(Number)
       .sort(function (a, b) { return state.dir === "asc" ? a - b : b - a; });
 
+    var globalIdx = 0; // index into CURRENT for modal lookup
     mount.innerHTML = years.map(function (y) {
       var group = byYear[y].slice().sort(function (a, b) {
         var ka = a.watchedDate || (a.year + "-12-31");
@@ -134,19 +148,78 @@
         return state.dir === "asc" ? c : -c;
       });
       var n = group.length + " film" + (group.length === 1 ? "" : "s");
+      var cards = group.map(function (m) {
+        var html = card(m, globalIdx);
+        CURRENT[globalIdx] = m;
+        globalIdx++;
+        return html;
+      }).join("");
       return (
-        '<div class="year-group">' +
-          '<div class="year-head">' +
-            '<span class="year-head__num">' + y + "</span>" +
-            '<span class="year-head__count">' + n + "</span>" +
-            '<span class="year-head__strip" aria-hidden="true"></span>' +
+        '<section class="year-group">' +
+          '<span class="year-group__ghost" aria-hidden="true">' + y + "</span>" +
+          '<div class="year-group__head">' +
+            '<span class="year-group__num">' + y + "</span>" +
+            '<span class="year-group__rule" aria-hidden="true"></span>' +
+            '<span class="year-group__count">' + n + "</span>" +
           "</div>" +
-          '<div class="grid">' + group.map(card).join("") + "</div>" +
-        "</div>"
+          '<div class="grid">' + cards + "</div>" +
+        "</section>"
       );
     }).join("");
 
+    CURRENT.length = globalIdx;
     observeReveals();
+  }
+
+  /* --------------------------- Hero ------------------------------ */
+  function buildHero(movies) {
+    if (!movies.length) return;
+
+    // latest by watchedDate
+    var latest = movies.slice().sort(function (a, b) {
+      return String(b.watchedDate || "").localeCompare(String(a.watchedDate || ""));
+    })[0];
+
+    if (latest && latest.poster) {
+      var bd = $("#hero-backdrop");
+      bd.style.backgroundImage = "url('" + latest.poster + "')";
+      var pre = new Image();
+      pre.onload = function () { bd.classList.add("is-ready"); };
+      pre.onerror = function () { bd.classList.add("is-ready"); };
+      pre.src = latest.poster;
+
+      var feat = $("#hero-feature");
+      feat.hidden = false;
+      var img = $("#hero-poster");
+      img.src = latest.poster;
+      img.alt = "Poster for " + latest.title;
+      img.setAttribute("data-title", latest.title);
+      img.setAttribute("onerror", "ACposterError(this)");
+      $("#hero-film-title").textContent = latest.title;
+      $("#hero-film-sub").textContent = dateLine(latest);
+
+      $("#hero-card").addEventListener("click", function () { openModal(latest); });
+    }
+
+    renderHeroStats(movies);
+  }
+
+  function renderHeroStats(movies) {
+    var langs = {};
+    movies.forEach(function (m) { if (m.language) langs[m.language] = 1; });
+    var years = movies.map(watchedYear).filter(Boolean);
+    var first = Math.min.apply(null, years);
+    var last = Math.max.apply(null, years);
+
+    var parts = [
+      { n: movies.length, label: "Films" },
+      { n: Object.keys(langs).length, label: "Languages" },
+      { n: (first === last ? String(first) : first + "–" + last), label: "On record" }
+    ];
+    $("#hero-stats").innerHTML = parts.map(function (p, i) {
+      return (i ? '<span class="hero__stat-div" aria-hidden="true"></span>' : "") +
+        '<span class="hero__stat"><b>' + p.n + "</b><span>" + p.label + "</span></span>";
+    }).join("");
   }
 
   /* --------------------------- Stats ----------------------------- */
@@ -156,7 +229,6 @@
     section.hidden = false;
 
     var total = movies.length;
-
     var langs = {};
     movies.forEach(function (m) { if (m.language) langs[m.language] = (langs[m.language] || 0) + 1; });
     var langKeys = Object.keys(langs);
@@ -164,10 +236,8 @@
     var years = movies.map(watchedYear).filter(Boolean);
     var first = Math.min.apply(null, years);
     var last = Math.max.apply(null, years);
-
     var rerel = movies.filter(function (m) { return m.rerelease; }).length;
 
-    // optional rating stat (only if any ratings present)
     var rated = movies.filter(function (m) { return m.rating != null && m.rating !== "" && !isNaN(+m.rating); });
     var avg = rated.length ? (rated.reduce(function (s, m) { return s + +m.rating; }, 0) / rated.length) : null;
 
@@ -178,17 +248,14 @@
     cells += avg != null
       ? cell("Average rating", avg.toFixed(1) + "<small>out of 10</small>")
       : cell("Re-releases", String(rerel) + "<small>seen on the big screen again</small>");
-
     $("#stats-grid").innerHTML = cells;
 
-    // by language
     var langPairs = langKeys.map(function (k) { return [k, langs[k]]; })
       .sort(function (a, b) { return b[1] - a[1]; });
     $("#bars-lang").innerHTML =
       '<p class="bars__title">By language</p>' +
       barRows(langPairs, Math.max.apply(null, langPairs.map(function (p) { return p[1]; })));
 
-    // by year
     var byYear = {};
     movies.forEach(function (m) { var y = watchedYear(m); byYear[y] = (byYear[y] || 0) + 1; });
     var yrPairs = Object.keys(byYear).map(Number).sort(function (a, b) { return b - a; })
@@ -223,11 +290,81 @@
     }
     var fill = function () { fills.forEach(function (f) { f.style.width = f.getAttribute("data-pct") + "%"; }); };
     var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (e.isIntersecting) { fill(); io.disconnect(); }
-      });
+      entries.forEach(function (e) { if (e.isIntersecting) { fill(); io.disconnect(); } });
     }, { threshold: 0, rootMargin: "0px 0px -60px 0px" });
     io.observe(section);
+  }
+
+  /* --------------------------- Modal ----------------------------- */
+  var lastFocused = null;
+
+  function factRow(label, valueHTML) {
+    return '<div class="modal__fact"><dt>' + esc(label) + "</dt><dd>" + valueHTML + "</dd></div>";
+  }
+
+  function openModal(movie) {
+    if (!movie) return;
+    lastFocused = document.activeElement;
+
+    var modal = $("#film-modal");
+    var bd = $("#modal-backdrop");
+    bd.style.backgroundImage = movie.poster ? "url('" + movie.poster + "')" : "none";
+
+    var img = $("#modal-poster-img");
+    if (movie.poster) {
+      img.src = movie.poster;
+      img.alt = "Poster for " + movie.title;
+      img.setAttribute("data-title", movie.title);
+      img.setAttribute("onerror", "ACposterError(this)");
+      img.style.display = "";
+    } else {
+      img.removeAttribute("src");
+      img.style.display = "none";
+    }
+    // no tags on the modal poster — language/format/re-release shown in the facts list
+    $("#modal-tags").innerHTML = "";
+
+    $("#modal-eyebrow").textContent = isFmt(movie)
+      ? movie.format + " screening" : "From the archive";
+    $("#modal-title").textContent = movie.title;
+
+    var facts = "";
+    facts += factRow("Watched", esc(formatDateLong(movie.watchedDate)));
+    var place = uniqueVenue(movie);
+    if (place) facts += factRow("Theatre", PIN.replace('class="pin"', 'class="modal__pin"') + "<span>" + esc(place) + "</span>");
+    if (movie.language) facts += factRow("Language", esc(movie.language));
+    if (movie.year) facts += factRow("Released", esc(String(movie.year)));
+    var bits = [];
+    if (movie.format) bits.push('<span class="modal__chip">' + esc(movie.format) + "</span>");
+    if (movie.rerelease) bits.push('<span class="modal__chip">Re-release</span>');
+    if (bits.length) facts += factRow("Format", bits.join(" "));
+    $("#modal-facts").innerHTML = facts;
+
+    modal.hidden = false;
+    document.body.style.overflow = "hidden";
+    $("#modal-close").focus();
+    document.addEventListener("keydown", onModalKey);
+  }
+
+  function closeModal() {
+    var modal = $("#film-modal");
+    if (modal.hidden) return;
+    modal.hidden = true;
+    document.body.style.overflow = "";
+    document.removeEventListener("keydown", onModalKey);
+    if (lastFocused && lastFocused.focus) lastFocused.focus();
+  }
+
+  function onModalKey(e) {
+    if (e.key === "Escape") { closeModal(); return; }
+    if (e.key === "Tab") {
+      // simple focus trap between close button and dialog
+      var focusables = $("#film-modal").querySelectorAll("button, [href], img, input");
+      if (!focusables.length) return;
+      var first = focusables[0], last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
   }
 
   /* ------------------------- Filtering --------------------------- */
@@ -238,7 +375,7 @@
       if (state.lang !== "all" && (m.language || "") !== state.lang) return false;
       if (q) {
         var hay = (m.title || "") + " " + (m.language || "") + " " +
-                  (m.theater || "") + " " + (m.city || "") + " " +
+                  (m.theatre || m.theater || "") + " " + (m.city || "") + " " +
                   String(watchedYear(m));
         if (hay.toLowerCase().indexOf(q) === -1) return false;
       }
@@ -294,14 +431,17 @@
         entries.forEach(function (e) {
           if (e.isIntersecting) { e.target.classList.add("is-in"); revealObserver.unobserve(e.target); }
         });
-      }, { threshold: 0.1, rootMargin: "0px 0px -6% 0px" });
+      }, { threshold: 0.08, rootMargin: "0px 0px -5% 0px" });
     }
-    items.forEach(function (el) { revealObserver.observe(el); });
+    // stagger within each grid row
+    items.forEach(function (el, i) {
+      el.style.transitionDelay = (Math.min(i % 12, 8) * 40) + "ms";
+      revealObserver.observe(el);
+    });
   }
 
   /* ---------------------- Poster handling ------------------------ */
-  // Posters may be .jpg or .png. Try the other extension once, then fall back
-  // to the designed placeholder.
+  // Posters are .webp; fall back to .jpg / .png, then the designed placeholder.
   window.ACposterError = function (img) {
     var src = img.getAttribute("src") || "";
     if (!img.getAttribute("data-ext-tried")) {
@@ -314,7 +454,7 @@
   };
 
   window.ACfallback = function (img) {
-    var poster = img.parentNode;
+    var poster = img.closest(".film__poster") || img.parentNode;
     var title = img.getAttribute("data-title") || "";
     var tags = poster.querySelectorAll(".tag");
     var tagHTML = "";
@@ -333,7 +473,7 @@
       '<div class="empty"><strong>The archive could not be opened.</strong>' + esc(msg) + "</div>";
   }
 
-  var REQUIRED_FIELDS = ["title", "watchedDate", "year", "language", "poster", "format", "theater", "city"];
+  var REQUIRED_FIELDS = ["title", "watchedDate", "year", "language", "poster", "format", "city"];
 
   function init(movies) {
     if (!Array.isArray(movies)) { showError("The data file must contain a list of films."); return; }
@@ -345,17 +485,22 @@
           console.warn("Absolute Cinema: \"" + (m.title || "unknown") + "\" is missing required field: " + f);
         }
       });
+      if ((m.theatre == null || m.theatre === "") && (m.theater == null || m.theater === ""))
+        console.warn("Absolute Cinema: \"" + (m.title || "unknown") + "\" is missing required field: theatre");
     });
 
+    buildHero(movies);
     buildFilters(movies);
     apply();
 
+    /* search */
     var input = $("#search-input"), t;
     input.addEventListener("input", function () {
       clearTimeout(t);
       t = setTimeout(function () { state.q = input.value; apply(); }, 70);
     });
 
+    /* filters + sort */
     $("#filter-year").addEventListener("change", function () { state.year = this.value; apply(); });
     $("#filter-lang").addEventListener("change", function () { state.lang = this.value; apply(); });
 
@@ -373,12 +518,33 @@
       input.value = ""; $("#filter-year").value = "all"; $("#filter-lang").value = "all";
       apply();
     });
+
+    /* gallery → modal (event delegation) */
+    $("#gallery").addEventListener("click", function (e) {
+      var btn = e.target.closest(".film");
+      if (!btn) return;
+      var idx = parseInt(btn.getAttribute("data-idx"), 10);
+      if (!isNaN(idx) && CURRENT[idx]) openModal(CURRENT[idx]);
+    });
+
+    /* modal close interactions */
+    $("#modal-close").addEventListener("click", closeModal);
+    $("#modal-scrim").addEventListener("click", closeModal);
+    $("#modal-backdrop").addEventListener("click", closeModal);
+
+    /* condensing sticky nav */
+    var nav = $("#nav");
+    var onScroll = function () {
+      if (window.scrollY > 40) nav.classList.add("is-stuck");
+      else nav.classList.remove("is-stuck");
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
   }
 
   function load() {
     if (Array.isArray(window.ACMovies)) { init(window.ACMovies); return; }
-    showError("data/movies.js is missing or malformed. It should define " +
-              "window.ACMovies = [ ... ].");
+    showError("data/movies.js is missing or malformed. It should define window.ACMovies = [ ... ].");
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", load);
