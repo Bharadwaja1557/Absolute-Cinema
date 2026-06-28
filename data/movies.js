@@ -37,7 +37,7 @@ window.ACMovies = [
     "format": "2D",
     "theater": "PVR Deep",
     "city": "Kanpur",
-    "poster": "posters/English/Peddi_(2026).jpg"
+    "poster": "posters/Telugu/Peddi_(2026).jpg"
   },
   {
     "title": "Dhurandhar: The Revenge",
