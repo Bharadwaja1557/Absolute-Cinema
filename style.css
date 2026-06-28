@@ -249,6 +249,7 @@ main { position: relative; z-index: 1; }
   overflow: hidden;
   background: linear-gradient(155deg, #241d14, #120f0a);
   border: 1px solid var(--line);
+  will-change: transform;
   transition: transform 0.4s var(--ease), box-shadow 0.4s var(--ease), border-color 0.4s;
 }
 .film:hover .film__poster,

@@ -305,8 +305,10 @@
   window.ACposterError = function (img) {
     var src = img.getAttribute("src") || "";
     if (!img.getAttribute("data-ext-tried")) {
-      if (/\.jpg$/i.test(src)) { img.setAttribute("data-ext-tried", "1"); img.src = src.replace(/\.jpg$/i, ".png"); return; }
-      if (/\.png$/i.test(src)) { img.setAttribute("data-ext-tried", "1"); img.src = src.replace(/\.png$/i, ".jpg"); return; }
+      img.setAttribute("data-ext-tried", "1");
+      if (/\.webp$/i.test(src)) { img.src = src.replace(/\.webp$/i, ".jpg"); return; }
+      if (/\.jpg$/i.test(src))  { img.src = src.replace(/\.jpg$/i,  ".png"); return; }
+      if (/\.png$/i.test(src))  { img.src = src.replace(/\.png$/i,  ".jpg"); return; }
     }
     ACfallback(img);
   };
