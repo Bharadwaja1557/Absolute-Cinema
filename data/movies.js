@@ -27,12 +27,12 @@ window.ACMovies = [
     "format": "2D",
     "theater": "INOX Z Square",
     "city": "Kanpur",
-    "poster": "posters/English/Obsession_(2026).jpg"
+    "poster": "posters/English/Obsession_(2026).png"
   },
   {
     "title": "Peddi",
     "year": 2026,
-    "watchedDate": "2026-06-4",
+    "watchedDate": "2026-06-04",
     "language": "Telugu",
     "format": "2D",
     "theater": "PVR Deep",
