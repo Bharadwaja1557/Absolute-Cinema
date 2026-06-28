@@ -238,13 +238,15 @@
       if (state.lang !== "all" && (m.language || "") !== state.lang) return false;
       if (q) {
         var hay = (m.title || "") + " " + (m.language || "") + " " +
-                  (m.theater || "") + " " + (m.city || "");
+                  (m.theater || "") + " " + (m.city || "") + " " +
+                  String(watchedYear(m));
         if (hay.toLowerCase().indexOf(q) === -1) return false;
       }
       return true;
     });
 
     renderGallery(list);
+    renderStats(list);
 
     var active = q || state.year !== "all" || state.lang !== "all";
     var countEl = $("#result-count");
@@ -329,12 +331,21 @@
       '<div class="empty"><strong>The archive could not be opened.</strong>' + esc(msg) + "</div>";
   }
 
+  var REQUIRED_FIELDS = ["title", "watchedDate", "year", "language", "poster", "format", "theater", "city"];
+
   function init(movies) {
     if (!Array.isArray(movies)) { showError("The data file must contain a list of films."); return; }
     ALL = movies;
 
+    movies.forEach(function (m) {
+      REQUIRED_FIELDS.forEach(function (f) {
+        if (m[f] == null || m[f] === "") {
+          console.warn("Absolute Cinema: \"" + (m.title || "unknown") + "\" is missing required field: " + f);
+        }
+      });
+    });
+
     buildFilters(movies);
-    renderStats(movies);
     apply();
 
     var input = $("#search-input"), t;

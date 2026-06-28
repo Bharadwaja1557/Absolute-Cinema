@@ -24,7 +24,6 @@
   --glow:   rgba(224, 177, 92, 0.18);
 
   --maxw: 1280px;
-  --topbar-h: 108px;            /* brand row + controls row (desktop) */
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 

@@ -4,19 +4,17 @@
 //
 // Films are ordered newest-first by watchedDate, and the gallery groups by
 // the year you watched. Fields:
-//   title       (required)
-//   watchedDate "YYYY-MM-DD"  — shown on the card; drives order & grouping
-//   year        the film's release year (used for the poster filename)
-//   language    shown as the tag
-//   poster      jpg or png — the site tries both
-//   format      optional — "IMAX" / "3D" / "4DX" show a chip; "2D" stays clean
-//   theater     optional — hall/theatre name (shown under the title)
-//   city        optional — appended after the theatre
-//   rerelease   optional — true shows a "Re-release" pill
+//   title       (required) — film title
+//   watchedDate (required) — "YYYY-MM-DD"; drives order & grouping
+//   year        (required) — film's release year (used for the poster filename)
+//   language    (required) — shown as the tag on the poster
+//   poster      (required) — relative path, jpg or png; the site tries both
+//   format      (required) — "2D" / "IMAX" / "3D" / "4DX"; only IMAX/3D/4DX show a chip
+//   theater     (required) — hall/theatre name (shown under the title)
+//   city        (required) — appended after the theatre
+//   rerelease   optional   — true shows a "Re-release" pill
 //
-// NOTE: watchedDates are seeded near each release (re-releases dated to when
-// you'd have caught them). Tweak any of them and the order updates itself.
-// theater/city/format are filled in only on a few films as examples.
+// NOTE: Tweak any watchedDate and the order updates itself.
 
 window.ACMovies = [
   {
@@ -171,6 +169,16 @@ window.ACMovies = [
     "poster": "posters/Telugu/Kalki_2898_AD_(2024).jpg"
   },
   {
+    "title": "Animal",
+    "year": 2023,
+    "watchedDate": "2023-12-02",
+    "language": "Hindi",
+    "format": "2D",
+    "theater": "",
+    "city": "",
+    "poster": "posters/Hindi/Animal_(2023).jpg"
+  },
+  {
     "title": "Miss Shetty Mr Polishetty",
     "year": 2023,
     "watchedDate": "2023-09-09",
@@ -224,7 +232,7 @@ window.ACMovies = [
     "year": 2023,
     "watchedDate": "2023-02-18",
     "language": "English",
-    "poster": "posters/English/Ant_Man_and_the_Wasp_Quantumania_(2023).jpg"
+    "poster": "posters/English/Ant_Man_and_the_Wasp_Quantumania_(2023).png"
   },
   {
     "title": "Varisu",
