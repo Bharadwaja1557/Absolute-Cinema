@@ -21,7 +21,7 @@ window.ACMovies = [
     "title": "Obsession",
     "year": 2026,
     "language": "English",
-    "poster": "posters/Obsession_(2026).jpg"
+    "poster": "posters/Obsession_(2026).png"
   },
   {
     "title": "Baahubali: The Epic",
