@@ -288,6 +288,13 @@ main { position: relative; z-index: 1; }
   border: 1px solid rgba(224,177,92,0.5);
   color: var(--gold-hi);
 }
+.tag--fmt {
+  left: 0.55rem; top: 0.55rem;
+  background: rgba(12,10,8,0.62);
+  border: 1px solid rgba(224,177,92,0.55);
+  color: var(--gold-hi);
+  font-weight: 700;
+}
 
 /* designed placeholder when no poster image is present */
 .film__poster--empty { display: grid; place-items: center; padding: 1.2rem; }
@@ -323,6 +330,20 @@ main { position: relative; z-index: 1; }
 .film__date {
   font-family: "Space Mono", monospace; font-size: 0.68rem;
   letter-spacing: 0.06em; color: var(--ink-3); margin: 0;
+}
+.film__venue {
+  display: flex; align-items: center; gap: 0.32rem;
+  margin: 0.28rem 0 0;
+  font-family: "Space Mono", monospace; font-size: 0.64rem;
+  letter-spacing: 0.02em; color: var(--ink-3);
+}
+.film__venue .pin {
+  width: 11px; height: 11px; flex: none;
+  fill: none; stroke: var(--gold-dim); stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.film__venue span {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
 /* ============================ STATS ============================ */

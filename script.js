@@ -55,9 +55,22 @@
 
   function tagsMarkup(movie) {
     var t = "";
+    if (movie.format && String(movie.format).trim().toUpperCase() !== "2D")
+      t += '<span class="tag tag--fmt">' + esc(movie.format) + "</span>";
     if (movie.language) t += '<span class="tag tag--lang">' + esc(movie.language) + "</span>";
     if (movie.rerelease) t += '<span class="tag tag--rr">Re-release</span>';
     return t;
+  }
+
+  var PIN =
+    '<svg class="pin" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12z"/>' +
+    '<circle cx="12" cy="9" r="2.4"/></svg>';
+
+  function venueLine(movie) {
+    var place = [movie.theater, movie.city].filter(Boolean).join(", ");
+    if (!place) return "";
+    return '<p class="film__venue">' + PIN + "<span>" + esc(place) + "</span></p>";
   }
 
   /* ------------------------- Film card --------------------------- */
@@ -86,6 +99,7 @@
         '<div class="film__info">' +
           '<h3 class="film__title">' + esc(movie.title) + "</h3>" +
           (dl ? '<p class="film__date">' + esc(dl) + "</p>" : "") +
+          venueLine(movie) +
         "</div>" +
       "</article>"
     );
