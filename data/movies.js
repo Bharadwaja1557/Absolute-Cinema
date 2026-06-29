@@ -132,11 +132,11 @@ window.ACMovies = [
     "title": "Thunderbolts",
     "year": 2025,
     "watchedDate": "2025-05-02",
-    "language": "Telugu",
+    "language": "English",
     "format": "2D",
     "theatre": "Gowri",
     "city": "Ananthapur",
-    "poster": "posters/Telugu/Thunderbolts_(2025).webp"
+    "poster": "posters/English/Thunderbolts_(2025).webp"
   },
   {
     "title": "Captain America: Brave New World",
