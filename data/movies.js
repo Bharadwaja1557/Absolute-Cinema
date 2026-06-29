@@ -129,6 +129,16 @@ window.ACMovies = [
     "poster": "posters/Telugu/MAD_Square_(2025).webp"
   },
   {
+    "title": "Thunderbolts",
+    "year": 2025,
+    "watchedDate": "2025-05-02",
+    "language": "Telugu",
+    "format": "2D",
+    "theatre": "Gowri",
+    "city": "Ananthapur",
+    "poster": "posters/Telugu/Thunderbolts_(2025).webp"
+  },
+  {
     "title": "Captain America: Brave New World",
     "year": 2025,
     "watchedDate": "2025-02-15",
@@ -196,10 +206,20 @@ window.ACMovies = [
     "year": 2024,
     "watchedDate": "2024-06-28",
     "language": "Telugu",
-    "format": "2D",
+    "format": "3D",
     "theatre": "MGB",
     "city": "Nellore",
     "poster": "posters/Telugu/Kalki_2898_AD_(2024).webp"
+  },
+  {
+    "title": "Gaami",
+    "year": 2024,
+    "watchedDate": "2024-03-10",
+    "language": "Telugu",
+    "format": "2D",
+    "theatre": "Maruthi",
+    "city": "Pulivendula",
+    "poster": "posters/Telugu/Gaami_(2024).webp"
   },
   {
     "title": "Animal",
@@ -466,7 +486,7 @@ window.ACMovies = [
     "year": 2013,
     "watchedDate": "2013-05-25",
     "language": "English",
-    "format": "2D",
+    "format": "3D",
     "theatre": "S2",
     "city": "Nellore",
     "poster": "posters/English/Epic_(2013).webp"
@@ -516,7 +536,7 @@ window.ACMovies = [
     "year": 2012,
     "watchedDate": "2012-02-11",
     "language": "English",
-    "format": "2D",
+    "format": "3D",
     "theatre": "S2",
     "city": "Nellore",
     "poster": "posters/English/Journey_2_The_Mysterious_Island_(2012).webp"
