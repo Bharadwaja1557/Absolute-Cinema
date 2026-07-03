@@ -136,7 +136,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "MGB",
     "city": "Nellore",
-    "poster": "posters/Telugu/#Single_(2025).jpg"
+    "poster": "posters/Telugu/Single_(2025).jpg"
   },
   {
     "title": "Thunderbolts",
@@ -277,8 +277,8 @@ window.ACMovies = [
     "watchedDate": "2023-09-02",
     "language": "Telugu",
     "format": "2D",
-    "theatre": "Sujatha",
-    "city": "Pulivendula",
+    "theatre": "Unknown",
+    "city": "Vijaywada",
     "poster": "posters/Telugu/Kushi_(2023).webp"
   },
   {
