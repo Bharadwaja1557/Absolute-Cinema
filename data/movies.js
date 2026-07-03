@@ -8,7 +8,11 @@
 //   watchedDate (required) — "YYYY-MM-DD"; drives order & grouping
 //   year        (required) — film's release year (used for the poster filename)
 //   language    (required) — shown as the tag on the poster
-//   poster      (required) — relative path; use .webp (falls back to .jpg/.png)
+//   poster      (required) — keep the local-style path "posters/<Language>/<File>.webp".
+//                            The site serves it from GitHub Releases automatically:
+//                            folder -> lowercase release tag, parentheses stripped, e.g.
+//                            posters/English/Ant_Man_..._(2023).webp
+//                              -> .../releases/download/english/Ant_Man_..._2023.webp
 //   format      (required) — "2D" / "IMAX" / "3D" / "4DX"; only IMAX/3D/4DX show a chip
 //   theatre     (required) — hall/theatre name (shown under the title)
 //   city        (required) — appended after the theatre
@@ -25,7 +29,7 @@ window.ACMovies = [
     "format": "3D",
     "theatre": "INOX Z Square",
     "city": "Kanpur",
-    "poster": "posters/English/Minions_&_Monsters_(2026).jpg"
+    "poster": "posters/English/Minions_and_Monsters_(2026).webp"
   },
   {
     "title": "Obsession",
@@ -136,7 +140,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "MGB",
     "city": "Nellore",
-    "poster": "posters/Telugu/Single_(2025).jpg"
+    "poster": "posters/Telugu/Single_(2025).webp"
   },
   {
     "title": "Thunderbolts",
