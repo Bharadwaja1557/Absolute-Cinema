@@ -18,6 +18,16 @@
 
 window.ACMovies = [
   {
+    "title": "Minions & Monsters",
+    "year": 2026,
+    "watchedDate": "2026-07-03",
+    "language": "English",
+    "format": "3D",
+    "theatre": "INOX Z Square",
+    "city": "Kanpur",
+    "poster": "posters/English/Minions_&_Monsters_(2026).jpg"
+  },
+  {
     "title": "Obsession",
     "year": 2026,
     "watchedDate": "2026-06-17",
@@ -119,14 +129,14 @@ window.ACMovies = [
     "poster": "posters/Tamil/Coolie_(2025).webp"
   },
   {
-    "title": "MAD Square",
+    "title": "#Single",
     "year": 2025,
     "watchedDate": "2025-05-10",
     "language": "Telugu",
     "format": "2D",
-    "theatre": "PVR",
-    "city": "Jaipur",
-    "poster": "posters/Telugu/MAD_Square_(2025).webp"
+    "theatre": "MGB",
+    "city": "Nellore",
+    "poster": "posters/Telugu/#Single_(2025).jpg"
   },
   {
     "title": "Thunderbolts",
@@ -137,6 +147,16 @@ window.ACMovies = [
     "theatre": "Gowri",
     "city": "Ananthapur",
     "poster": "posters/English/Thunderbolts_(2025).webp"
+  },
+  {
+    "title": "MAD Square",
+    "year": 2025,
+    "watchedDate": "2025-04-02",
+    "language": "Telugu",
+    "format": "2D",
+    "theatre": "PVR",
+    "city": "Jaipur",
+    "poster": "posters/Telugu/MAD_Square_(2025).webp"
   },
   {
     "title": "Captain America: Brave New World",
