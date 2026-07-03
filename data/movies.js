@@ -129,7 +129,7 @@ window.ACMovies = [
     "poster": "posters/Tamil/Coolie_(2025).webp"
   },
   {
-    "title": "#Single",
+    "title": "Single",
     "year": 2025,
     "watchedDate": "2025-05-10",
     "language": "Telugu",
