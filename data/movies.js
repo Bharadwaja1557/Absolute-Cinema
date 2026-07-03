@@ -7,12 +7,13 @@
 //   title       (required) — film title
 //   watchedDate (required) — "YYYY-MM-DD"; drives order & grouping
 //   year        (required) — film's release year (used for the poster filename)
-//   language    (required) — shown as the tag on the poster
-//   poster      (required) — keep the local-style path "posters/<Language>/<File>.webp".
-//                            The site serves it from GitHub Releases automatically:
-//                            folder -> lowercase release tag, parentheses stripped, e.g.
-//                            posters/English/Ant_Man_..._(2023).webp
+//   language    (required) — shown as the tag on the poster; also the release tag
+//   poster      (required) — release asset FILENAME only, no folder, no parentheses,
+//                            e.g. "Ant_Man_and_the_Wasp_Quantumania_2023.webp".
+//                            The site builds the URL from language + filename:
+//                            language "English" + "Ant_Man_..._2023.webp"
 //                              -> .../releases/download/english/Ant_Man_..._2023.webp
+//                            (A full http(s) URL is also accepted and used as-is.)
 //   format      (required) — "2D" / "IMAX" / "3D" / "4DX"; only IMAX/3D/4DX show a chip
 //   theatre     (required) — hall/theatre name (shown under the title)
 //   city        (required) — appended after the theatre
@@ -29,7 +30,7 @@ window.ACMovies = [
     "format": "3D",
     "theatre": "INOX Z Square",
     "city": "Kanpur",
-    "poster": "posters/English/Minions_and_Monsters_(2026).webp"
+    "poster": "Minions_and_Monsters_2026.webp"
   },
   {
     "title": "Obsession",
@@ -39,7 +40,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "INOX Z Square",
     "city": "Kanpur",
-    "poster": "posters/English/Obsession_(2026).webp"
+    "poster": "Obsession_2026.webp"
   },
   {
     "title": "Peddi",
@@ -49,7 +50,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "PVR Deep",
     "city": "Kanpur",
-    "poster": "posters/Telugu/Peddi_(2026).webp"
+    "poster": "Peddi_2026.webp"
   },
   {
     "title": "Dhurandhar: The Revenge",
@@ -59,7 +60,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "INOX Z Square",
     "city": "Kanpur",
-    "poster": "posters/Hindi/Dhurandhar_The_Revenge_(2026).webp"
+    "poster": "Dhurandhar_The_Revenge_2026.webp"
   },
   {
     "title": "Dhurandhar",
@@ -69,7 +70,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "MGB",
     "city": "Nellore",
-    "poster": "posters/Hindi/Dhurandhar_(2025).webp"
+    "poster": "Dhurandhar_2025.webp"
   },
   {
     "title": "Akhanda 2: Thaandavam",
@@ -79,7 +80,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Rain Square",
     "city": "Nellore",
-    "poster": "posters/Telugu/Akhanda_2_Thaandavam_(2025).webp"
+    "poster": "Akhanda_2_Thaandavam_2025.webp"
   },
   {
     "title": "Baahubali: The Epic",
@@ -89,7 +90,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Rave 3",
     "city": "Kanpur",
-    "poster": "posters/Telugu/Baahubali_The_Epic_(2025).webp",
+    "poster": "Baahubali_The_Epic_2025.webp",
     "rerelease": true
   },
   {
@@ -100,7 +101,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "PVR Deep",
     "city": "Kanpur",
-    "poster": "posters/Kannada/Kantara_Chapter_1_(2025).webp"
+    "poster": "Kantara_Chapter_1_2025.webp"
   },
   {
     "title": "They Call Him OG",
@@ -110,7 +111,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Rave 3",
     "city": "Kanpur",
-    "poster": "posters/Telugu/They_Call_Him_OG_(2025).webp"
+    "poster": "They_Call_Him_OG_2025.webp"
   },
   {
     "title": "The Bengal Files",
@@ -120,7 +121,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "PVR Unknown",
     "city": "Kanpur",
-    "poster": "posters/Hindi/The_Bengal_Files_(2025).webp"
+    "poster": "The_Bengal_Files_2025.webp"
   },
   {
     "title": "Coolie",
@@ -130,7 +131,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Rave 3",
     "city": "Kanpur",
-    "poster": "posters/Tamil/Coolie_(2025).webp"
+    "poster": "Coolie_2025.webp"
   },
   {
     "title": "Single",
@@ -140,7 +141,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "MGB",
     "city": "Nellore",
-    "poster": "posters/Telugu/Single_(2025).webp"
+    "poster": "Single_2025.webp"
   },
   {
     "title": "Thunderbolts",
@@ -150,7 +151,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Gowri",
     "city": "Ananthapur",
-    "poster": "posters/English/Thunderbolts_(2025).webp"
+    "poster": "Thunderbolts_2025.webp"
   },
   {
     "title": "MAD Square",
@@ -160,7 +161,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "PVR",
     "city": "Jaipur",
-    "poster": "posters/Telugu/MAD_Square_(2025).webp"
+    "poster": "MAD_Square_2025.webp"
   },
   {
     "title": "Captain America: Brave New World",
@@ -170,7 +171,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "MGB",
     "city": "Nellore",
-    "poster": "posters/English/Captain_America_Brave_New_World_(2025).webp"
+    "poster": "Captain_America_Brave_New_World_2025.webp"
   },
   {
     "title": "Seethamma Vakitlo Sirimalle Chettu",
@@ -180,7 +181,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Sandhya",
     "city": "Hyderabad",
-    "poster": "posters/Telugu/Seethamma_Vakitlo_Sirimalle_Chettu_(2013).webp",
+    "poster": "Seethamma_Vakitlo_Sirimalle_Chettu_2013.webp",
     "rerelease": true
   },
   {
@@ -191,7 +192,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "S2",
     "city": "Nellore",
-    "poster": "posters/Telugu/Pushpa_2_The_Rule_(2024).webp"
+    "poster": "Pushpa_2_The_Rule_2024.webp"
   },
   {
     "title": "Khaleja",
@@ -201,7 +202,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "S2",
     "city": "Nellore",
-    "poster": "posters/Telugu/Khaleja_(2010).webp",
+    "poster": "Khaleja_2010.webp",
     "rerelease": true
   },
   {
@@ -212,7 +213,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Sujatha",
     "city": "Pulivendula",
-    "poster": "posters/Telugu/Kushi_(2001).webp",
+    "poster": "Kushi_2001.webp",
     "rerelease": true
   },
   {
@@ -223,7 +224,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Sujatha",
     "city": "Pulivendula",
-    "poster": "posters/Telugu/Committee_Kurrollu_(2024).webp"
+    "poster": "Committee_Kurrollu_2024.webp"
   },
   {
     "title": "Kalki 2898 AD",
@@ -233,7 +234,7 @@ window.ACMovies = [
     "format": "3D",
     "theatre": "MGB",
     "city": "Nellore",
-    "poster": "posters/Telugu/Kalki_2898_AD_(2024).webp"
+    "poster": "Kalki_2898_AD_2024.webp"
   },
   {
     "title": "Gaami",
@@ -243,7 +244,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Maruthi",
     "city": "Pulivendula",
-    "poster": "posters/Telugu/Gaami_(2024).webp"
+    "poster": "Gaami_2024.webp"
   },
   {
     "title": "Animal",
@@ -253,7 +254,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Maruthi",
     "city": "Pulivendula",
-    "poster": "posters/Hindi/Animal_(2023).webp"
+    "poster": "Animal_2023.webp"
   },
   {
     "title": "Miss Shetty Mr Polishetty",
@@ -263,7 +264,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "S2",
     "city": "Nellore",
-    "poster": "posters/Telugu/Miss_Shetty_Mr_Polishetty_(2023).webp"
+    "poster": "Miss_Shetty_Mr_Polishetty_2023.webp"
   },
   {
     "title": "Jawan",
@@ -273,7 +274,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Sujatha",
     "city": "Pulivendula",
-    "poster": "posters/Hindi/Jawan_(2023).webp"
+    "poster": "Jawan_2023.webp"
   },
   {
     "title": "Kushi",
@@ -283,7 +284,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Unknown",
     "city": "Vijaywada",
-    "poster": "posters/Telugu/Kushi_(2023).webp"
+    "poster": "Kushi_2023.webp"
   },
   {
     "title": "Oppenheimer",
@@ -293,7 +294,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "S2",
     "city": "Nellore",
-    "poster": "posters/English/Oppenheimer_(2023).webp"
+    "poster": "Oppenheimer_2023.webp"
   },
   {
     "title": "Adipurush",
@@ -303,7 +304,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "MGB",
     "city": "Nellore",
-    "poster": "posters/Telugu/Adipurush_(2023).webp"
+    "poster": "Adipurush_2023.webp"
   },
   {
     "title": "Virupaksha",
@@ -313,7 +314,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Maruthi",
     "city": "Pulivendula",
-    "poster": "posters/Telugu/Virupaksha_(2023).webp"
+    "poster": "Virupaksha_2023.webp"
   },
   {
     "title": "Shaakuntalam",
@@ -323,7 +324,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Maruthi",
     "city": "Pulivendula",
-    "poster": "posters/Telugu/Shaakuntalam_(2023).webp"
+    "poster": "Shaakuntalam_2023.webp"
   },
   {
     "title": "Ant-Man and the Wasp: Quantumania",
@@ -333,7 +334,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Maruthi",
     "city": "Pulivendula",
-    "poster": "posters/English/Ant_Man_and_the_Wasp_Quantumania_(2023).webp"
+    "poster": "Ant_Man_and_the_Wasp_Quantumania_2023.webp"
   },
   {
     "title": "Varisu",
@@ -343,7 +344,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "MGB",
     "city": "Nellore",
-    "poster": "posters/Tamil/Varisu_(2023).webp"
+    "poster": "Varisu_2023.webp"
   },
   {
     "title": "Sardar",
@@ -353,7 +354,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Maruthi",
     "city": "Pulivendula",
-    "poster": "posters/Tamil/Sardar_(2022).webp"
+    "poster": "Sardar_2022.webp"
   },
   {
     "title": "Kantara",
@@ -363,7 +364,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Sujatha",
     "city": "Pulivendula",
-    "poster": "posters/Kannada/Kantara_(2022).webp"
+    "poster": "Kantara_2022.webp"
   },
   {
     "title": "Oke Oka Jeevitham",
@@ -373,7 +374,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Maruthi",
     "city": "Pulivendula",
-    "poster": "posters/Telugu/Oke_Oka_Jeevitham_(2022).webp"
+    "poster": "Oke_Oka_Jeevitham_2022.webp"
   },
   {
     "title": "Sita Ramam",
@@ -383,7 +384,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Maruthi",
     "city": "Pulivendula",
-    "poster": "posters/Telugu/Sita_Ramam_(2022).webp"
+    "poster": "Sita_Ramam_2022.webp"
   },
   {
     "title": "Thor: Love and Thunder",
@@ -393,7 +394,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "MGB",
     "city": "Nellore",
-    "poster": "posters/English/Thor_Love_and_Thunder_(2022).webp"
+    "poster": "Thor_Love_and_Thunder_2022.webp"
   },
   {
     "title": "Manchi Rojulochaie",
@@ -403,7 +404,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Maruthi",
     "city": "Pulivendula",
-    "poster": "posters/Telugu/Manchi_Rojulochaie_(2021).webp"
+    "poster": "Manchi_Rojulochaie_2021.webp"
   },
   {
     "title": "Spider-Man: No Way Home",
@@ -413,7 +414,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Maruthi",
     "city": "Pulivendula",
-    "poster": "posters/English/Spider_Man_No_Way_Home_(2021).webp"
+    "poster": "Spider_Man_No_Way_Home_2021.webp"
   },
   {
     "title": "RED",
@@ -423,7 +424,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Special theatre",
     "city": "Mypadu",
-    "poster": "posters/Telugu/RED_(2021).webp"
+    "poster": "RED_2021.webp"
   },
   {
     "title": "Vinaya Vidheya Rama",
@@ -433,7 +434,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "MGB",
     "city": "Nellore",
-    "poster": "posters/Telugu/Vinaya_Vidheya_Rama_(2019).webp"
+    "poster": "Vinaya_Vidheya_Rama_2019.webp"
   },
   {
     "title": "Mahanati",
@@ -443,7 +444,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "MGB",
     "city": "Nellore",
-    "poster": "posters/Telugu/Mahanati_(2018).webp"
+    "poster": "Mahanati_2018.webp"
   },
   {
     "title": "Rangasthalam",
@@ -453,7 +454,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "S2",
     "city": "Nellore",
-    "poster": "posters/Telugu/Rangasthalam_(2018).webp"
+    "poster": "Rangasthalam_2018.webp"
   },
   {
     "title": "Baahubali 2: The Conclusion",
@@ -463,7 +464,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Leela Mahal",
     "city": "Nellore",
-    "poster": "posters/Telugu/Baahubali_2_The_Conclusion_(2017).webp"
+    "poster": "Baahubali_2_The_Conclusion_2017.webp"
   },
   {
     "title": "The Fate of the Furious",
@@ -473,7 +474,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "S2",
     "city": "Nellore",
-    "poster": "posters/English/The_Fate_of_the_Furious_(2017).webp"
+    "poster": "The_Fate_of_the_Furious_2017.webp"
   },
   {
     "title": "Gautamiputra Satakarni",
@@ -483,7 +484,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Special theatre",
     "city": "Mypadu",
-    "poster": "posters/Telugu/Gautamiputra_Satakarni_(2017).webp"
+    "poster": "Gautamiputra_Satakarni_2017.webp"
   },
   {
     "title": "Hyper",
@@ -493,7 +494,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Special theatre",
     "city": "Mypadu",
-    "poster": "posters/Telugu/Hyper_(2016).webp"
+    "poster": "Hyper_2016.webp"
   },
   {
     "title": "Baahubali: The Beginning",
@@ -503,7 +504,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "S2",
     "city": "Nellore",
-    "poster": "posters/Telugu/Baahubali_The_Beginning_(2015).webp"
+    "poster": "Baahubali_The_Beginning_2015.webp"
   },
   {
     "title": "Epic",
@@ -513,7 +514,7 @@ window.ACMovies = [
     "format": "3D",
     "theatre": "S2",
     "city": "Nellore",
-    "poster": "posters/English/Epic_(2013).webp"
+    "poster": "Epic_2013.webp"
   },
   {
     "title": "Cameraman Gangatho Rambabu",
@@ -523,7 +524,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Special theatre",
     "city": "Mypadu",
-    "poster": "posters/Telugu/Cameraman_Gangatho_Rambabu_(2012).webp"
+    "poster": "Cameraman_Gangatho_Rambabu_2012.webp"
   },
   {
     "title": "Gabbar Singh",
@@ -533,7 +534,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Leela Mahal",
     "city": "Nellore",
-    "poster": "posters/Telugu/Gabbar_Singh_(2012).webp"
+    "poster": "Gabbar_Singh_2012.webp"
   },
   {
     "title": "Dhammu",
@@ -543,7 +544,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Special theatre",
     "city": "Mypadu",
-    "poster": "posters/Telugu/Dhammu_(2012).webp"
+    "poster": "Dhammu_2012.webp"
   },
   {
     "title": "Racha",
@@ -553,7 +554,7 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "S2",
     "city": "Nellore",
-    "poster": "posters/Telugu/Racha_(2012).webp"
+    "poster": "Racha_2012.webp"
   },
   {
     "title": "Journey 2: The Mysterious Island",
@@ -563,7 +564,7 @@ window.ACMovies = [
     "format": "3D",
     "theatre": "S2",
     "city": "Nellore",
-    "poster": "posters/English/Journey_2_The_Mysterious_Island_(2012).webp"
+    "poster": "Journey_2_The_Mysterious_Island_2012.webp"
   },
   {
     "title": "Shakti",
@@ -573,6 +574,6 @@ window.ACMovies = [
     "format": "2D",
     "theatre": "Special theatre",
     "city": "Mypadu",
-    "poster": "posters/Telugu/Shakti_(2011).webp"
+    "poster": "Shakti_2011.webp"
   }
 ];

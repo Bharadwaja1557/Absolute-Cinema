@@ -24,23 +24,23 @@
 
   /* --------------------- Poster source (releases) ---------------------
      Posters live in GitHub Releases — one release tag per language — so the
-     repo stays lightweight. data/movies.js keeps the familiar local path
-     ("posters/<Language>/<File>.webp"); we translate it to the release asset
-     URL at render time:
-       posters/English/Ant_Man_..._(2023).webp
-         -> <base>/english/Ant_Man_..._2023.webp
-     (folder name -> lowercase release tag; parentheses stripped to match the
-     uploaded asset name). Absolute URLs are passed through untouched. */
+     repo stays lightweight. In data/movies.js the "poster" field is just the
+     release asset filename (e.g. "Peddi_2026.webp"); the release tag is the
+     film's "language", lowercased. So:
+       language "Telugu" + poster "Peddi_2026.webp"
+         -> <base>/telugu/Peddi_2026.webp
+     Any folder prefix or parentheses in "poster" are stripped defensively, and
+     a full http(s) URL is passed through untouched. */
   var POSTER_RELEASE_BASE =
     "https://github.com/Bharadwaja1557/Absolute-Cinema/releases/download";
 
-  function posterURL(poster) {
+  function posterURL(movie) {
+    var poster = movie && movie.poster;
     if (!poster) return "";
-    if (/^https?:\/\//i.test(poster)) return poster;          // already absolute
-    var m = /^posters\/([^\/]+)\/(.+)$/.exec(poster);
-    if (!m) return poster;                                    // unrecognised — leave as-is
-    var tag = m[1].toLowerCase();
-    var file = m[2].replace(/[()]/g, "");                     // strip ( ) to match release asset
+    if (/^https?:\/\//i.test(poster)) return poster;          // already absolute — use as-is
+    var file = poster.replace(/^.*\//, "").replace(/[()]/g, ""); // filename only, no parens
+    var tag = String(movie.language || "").trim().toLowerCase();
+    if (!tag) return file;                                     // no language -> can't build URL
     return POSTER_RELEASE_BASE + "/" + tag + "/" + encodeURIComponent(file);
   }
 
@@ -108,14 +108,13 @@
     var tags = tagsMarkup(movie);
     var posterInner;
     if (movie.poster) {
-      var url = esc(posterURL(movie.poster));
-      var local = esc(movie.poster);
+      var url = esc(posterURL(movie));
       posterInner =
         '<span class="film__glow" style="background-image:url(\'' + url + '\')"></span>' +
         '<div class="film__poster">' + tags +
           '<img src="' + url + '" alt="Poster for ' + esc(movie.title) +
             '" loading="lazy" data-title="' + esc(movie.title) +
-            '" data-local="' + local + '" onerror="ACposterError(this)">' +
+            '" onerror="ACposterError(this)">' +
           '<span class="film__view">View ⤢</span>' +
         "</div>";
     } else {
@@ -205,7 +204,7 @@
     })[0];
 
     if (latest && latest.poster) {
-      var latestURL = posterURL(latest.poster);
+      var latestURL = posterURL(latest);
       var bd = $("#hero-backdrop");
       bd.style.backgroundImage = "url('" + latestURL + "')";
       var pre = new Image();
@@ -219,7 +218,6 @@
       img.src = latestURL;
       img.alt = "Poster for " + latest.title;
       img.setAttribute("data-title", latest.title);
-      img.setAttribute("data-local", latest.poster);
       img.setAttribute("onerror", "ACposterError(this)");
       $("#hero-film-title").textContent = latest.title;
       $("#hero-film-sub").textContent = dateLine(latest);
@@ -334,18 +332,15 @@
 
     var modal = $("#film-modal");
     var bd = $("#modal-backdrop");
-    var url = posterURL(movie.poster);
+    var url = posterURL(movie);
     bd.style.backgroundImage = movie.poster ? "url('" + url + "')" : "none";
 
     var img = $("#modal-poster-img");
     if (movie.poster) {
-      img.removeAttribute("data-local-tried");   // reset fallback state (img is reused)
-      img.removeAttribute("data-ext-tried");
       img.src = url;
       img.alt = "Poster for " + movie.title;
-      img.setAttribute("data-title", movie.title);
-      img.setAttribute("data-local", movie.poster);
-      img.setAttribute("onerror", "ACposterError(this)");
+      // non-destructive: hide on error (the img element is reused across films)
+      img.onerror = function () { img.style.display = "none"; };
       img.style.display = "";
     } else {
       img.removeAttribute("src");
@@ -471,28 +466,9 @@
   }
 
   /* ---------------------- Poster handling ------------------------
-     Load order: release URL (primary) -> bundled local file (if still in the
-     repo) -> .jpg/.png variants -> the designed placeholder. The local step
-     keeps things working while posters are being migrated to releases, and
-     simply falls through to the placeholder once local files are removed. */
+     Posters are served from GitHub Releases. If an asset can't be loaded
+     (missing or misnamed), show the designed clapperboard placeholder. */
   window.ACposterError = function (img) {
-    // 1) release URL failed -> try the bundled local file
-    var local = img.getAttribute("data-local");
-    if (local && !img.getAttribute("data-local-tried") && img.getAttribute("src") !== local) {
-      img.setAttribute("data-local-tried", "1");
-      img.removeAttribute("data-ext-tried");   // allow extension swaps on the local path too
-      img.src = local;
-      return;
-    }
-    // 2) try the other common extensions on the current source
-    var src = img.getAttribute("src") || "";
-    if (!img.getAttribute("data-ext-tried")) {
-      img.setAttribute("data-ext-tried", "1");
-      if (/\.webp$/i.test(src)) { img.src = src.replace(/\.webp$/i, ".jpg"); return; }
-      if (/\.jpg$/i.test(src))  { img.src = src.replace(/\.jpg$/i,  ".png"); return; }
-      if (/\.png$/i.test(src))  { img.src = src.replace(/\.png$/i,  ".jpg"); return; }
-    }
-    // 3) give up -> designed placeholder
     ACfallback(img);
   };
 
