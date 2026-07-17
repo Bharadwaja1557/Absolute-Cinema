@@ -23,6 +23,16 @@
 
 window.ACMovies = [
   {
+    "title": "The Odyssey",
+    "year": 2026,
+    "watchedDate": "2026-07-17",
+    "language": "English",
+    "format": "2D",
+    "theatre": "INOX Z Square",
+    "city": "Kanpur",
+    "poster": "The_Odyssey_2026.webp"
+  },
+  {
     "title": "Minions & Monsters",
     "year": 2026,
     "watchedDate": "2026-07-03",
