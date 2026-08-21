@@ -33,6 +33,16 @@ window.ACMovies = [
     "poster": "Irumudi_2026.webp"
   },
   {
+    "title": "Spider-Man: Brand New Day (2026)",
+    "year": 2026,
+    "watchedDate": "2026-07-30",
+    "language": "English",
+    "format": "4DX",
+    "theatre": "PVR SUPERPLEX",
+    "city": "Lucknow",
+    "poster": "Spiderman_Brand_New_Day_2026.webp"
+  },
+  {
     "title": "The Odyssey",
     "year": 2026,
     "watchedDate": "2026-07-17",
