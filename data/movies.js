@@ -23,6 +23,16 @@
 
 window.ACMovies = [
   {
+    "title": "Irumudi",
+    "year": 2026,
+    "watchedDate": "2026-08-21",
+    "language": "Telugu",
+    "format": "2D",
+    "theatre": "Ratan Elegance",
+    "city": "Kanpur",
+    "poster": "Irumudi_2026.webp"
+  },
+  {
     "title": "The Odyssey",
     "year": 2026,
     "watchedDate": "2026-07-17",
