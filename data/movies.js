@@ -33,7 +33,7 @@ window.ACMovies = [
     "poster": "Irumudi_2026.webp"
   },
   {
-    "title": "Spider-Man: Brand New Day (2026)",
+    "title": "Spider-Man: Brand New Day",
     "year": 2026,
     "watchedDate": "2026-07-30",
     "language": "English",
