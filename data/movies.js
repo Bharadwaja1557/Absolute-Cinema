@@ -23,6 +23,16 @@
 
 window.ACMovies = [
   {
+    "title": "Resident Evil",
+    "year": 2026,
+    "watchedDate": "2026-09-20",
+    "language": "English",
+    "format": "2D",
+    "theatre": "MGB",
+    "city": "Nellore",
+    "poster": "Resident_Evil_2026.webp"
+  },
+  {
     "title": "Irumudi",
     "year": 2026,
     "watchedDate": "2026-08-21",
