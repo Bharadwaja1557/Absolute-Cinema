@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Absolute Cinema</title>
+  <meta name="description" content="A personal archive of every film watched in a theatre." />
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230e0e10'/><rect x='9' y='7' width='14' height='18' rx='2' fill='%23f0f0f2'/></svg>" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Absolute Cinema" />
+  <meta property="og:description" content="A personal archive of every film watched in a theatre." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="head">
+    <div class="head__bar">
+      <h1 class="head__name">Absolute Cinema</h1>
+      <p class="head__sub" id="summary"></p>
+    </div>
+
+    <div class="tools">
+      <label class="field field--search">
+        <svg class="field__icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="7" /><line x1="16.5" y1="16.5" x2="21" y2="21" />
+        </svg>
+        <input id="search" type="search" placeholder="Search" autocomplete="off"
+          spellcheck="false" aria-label="Search films" />
+      </label>
+
+      <label class="field field--select">
+        <select id="filter-year" aria-label="Filter by year">
+          <option value="all">All years</option>
+        </select>
+      </label>
+
+      <label class="field field--select">
+        <select id="filter-lang" aria-label="Filter by language">
+          <option value="all">All languages</option>
+        </select>
+      </label>
+
+      <button id="sort" class="btn" type="button">Newest first</button>
+      <button id="clear" class="btn btn--quiet" type="button" hidden>Clear</button>
+    </div>
+  </header>
+
+  <main id="gallery" class="gallery" aria-label="Films by year">
+    <p class="note">Loading…</p>
+  </main>
+
+  <footer class="foot">
+    <p>Absolute Cinema — every ticket, every screening.</p>
+  </footer>
+
+  <div class="modal" id="modal" hidden>
+    <div class="modal__scrim" id="modal-scrim"></div>
+    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal__close" id="modal-close" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+      </button>
+      <div class="modal__art" id="modal-art"></div>
+      <div class="modal__body">
+        <h2 class="modal__title" id="modal-title"></h2>
+        <dl class="facts" id="modal-facts"></dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shared with the live site. If this folder is ever promoted to the repo
+       root, change this to "data/movies.js". -->
+  <script src="../data/movies.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
