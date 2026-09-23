@@ -1,15 +1,17 @@
 /* =========================================================
    Absolute Cinema — reboot
-   Reads window.ACMovies (data/movies.js). Search, filter,
-   sort, and a detail panel. Nothing else.
+   Reads window.ACMovies (data/movies.js).
+   Opening · search / filter / sort · detail panel · statistics.
    ========================================================= */
 
 (function () {
   "use strict";
 
   var ALL = [];
-  var SHOWN = [];                                   // post-filter, index-aligned with the cards
+  var SHOWN = [];                          // post-filter, index-aligned with the cards
   var state = { q: "", year: "all", lang: "all", dir: "desc" };
+
+  var CURRENCY = "₹";                 // shown before every price
 
   function $(s) { return document.querySelector(s); }
 
@@ -62,6 +64,21 @@
     return f && f.toUpperCase() !== "2D" ? f : "";
   }
 
+  /* Price is optional and may be a number or a numeric string. */
+  function priceOf(movie) {
+    var p = movie && movie.price;
+    if (p == null || p === "") return null;
+    var n = typeof p === "number" ? p : parseFloat(String(p).replace(/[^0-9.]/g, ""));
+    return isNaN(n) ? null : n;
+  }
+  function money(n) {
+    // Whole rupees stay whole; paise are kept when a price has them.
+    var exact = n % 1 === 0 ? 0 : 2;
+    return CURRENCY + n.toLocaleString("en-IN", {
+      minimumFractionDigits: exact, maximumFractionDigits: exact
+    });
+  }
+
   /* ---------------------------- Cards ---------------------------- */
 
   function artMarkup(movie, cls) {
@@ -76,21 +93,24 @@
       'data-title="' + esc(movie.title) + '"></div>';
   }
 
+  /* Title and watched date only — theatre and city live in the detail panel. */
   function cardMarkup(movie, idx) {
-    var meta = [shortDate(movie.watchedDate), venue(movie)].filter(Boolean).join(" · ");
+    var date = shortDate(movie.watchedDate);
     return (
       '<button class="film" type="button" data-idx="' + idx + '" ' +
         'aria-label="Details for ' + esc(movie.title) + '">' +
         artMarkup(movie, "film__art") +
         '<div class="film__info">' +
           '<h3 class="film__title">' + esc(movie.title) + "</h3>" +
-          (meta ? '<p class="film__meta">' + esc(meta) + "</p>" : "") +
+          (date ? '<p class="film__date">' + esc(date) + "</p>" : "") +
         "</div>" +
       "</button>"
     );
   }
 
-  /* A missing poster falls back to the film's title on a plain tile. */
+  /* A missing poster falls back to the film's title on a plain tile. Used by
+     the cards, the opening feature and the detail panel alike, so an asset
+     that has not been uploaded yet never shows a broken image. */
   function handlePosterErrors(root) {
     root.querySelectorAll("img[data-title]").forEach(function (img) {
       img.addEventListener("error", function () {
@@ -101,6 +121,11 @@
           '<div class="film__ph">' + esc(img.getAttribute("data-title")) + "</div>";
       });
     });
+  }
+
+  function posterImg(movie) {
+    return '<img src="' + esc(posterURL(movie)) + '" alt="" data-title="' +
+      esc(movie.title) + '">';
   }
 
   /* --------------------------- Gallery --------------------------- */
@@ -141,30 +166,102 @@
     handlePosterErrors(mount);
   }
 
+  /* -------------------------- Opening ---------------------------- */
+
+  function buildHero(movies) {
+    if (!movies.length) return;
+
+    var latest = movies.slice().sort(function (a, b) {
+      return String(b.watchedDate || "").localeCompare(String(a.watchedDate || ""));
+    })[0];
+
+    if (latest && latest.poster) {
+      var url = posterURL(latest);
+      var backdrop = $("#hero-backdrop");
+      backdrop.style.backgroundImage = "url('" + url + "')";
+
+      // Fade the wash in once the poster is actually decoded.
+      var pre = new Image();
+      pre.onload = pre.onerror = function () { backdrop.classList.add("is-ready"); };
+      pre.src = url;
+
+      $("#hero-feature").hidden = false;
+      $("#hero-art").innerHTML = posterImg(latest);
+      handlePosterErrors($("#hero-art"));
+      $("#hero-title").textContent = latest.title;
+      $("#hero-sub").textContent = shortDate(latest.watchedDate);
+      $("#hero-card").addEventListener("click", function () { openModal(latest); });
+    }
+
+    var langs = countBy(movies, "language");
+    var span = yearSpan(movies);
+    $("#hero-stats").innerHTML = [
+      [movies.length, "Films"],
+      [Object.keys(langs).length, "Languages"],
+      [span, "On record"]
+    ].map(function (p) {
+      return '<span class="hero__stat"><b>' + p[0] + "</b><span>" + p[1] + "</span></span>";
+    }).join("");
+  }
+
+  function countBy(movies, key) {
+    var out = {};
+    movies.forEach(function (m) { if (m[key]) out[m[key]] = (out[m[key]] || 0) + 1; });
+    return out;
+  }
+  function yearSpan(movies) {
+    var years = movies.map(watchedYear).filter(Boolean);
+    if (!years.length) return "—";
+    var lo = Math.min.apply(null, years), hi = Math.max.apply(null, years);
+    return lo === hi ? String(lo) : lo + "–" + hi;
+  }
+
   /* ---------------------------- Modal ---------------------------- */
 
   var lastFocused = null;
 
-  function fact(label, value) {
-    return '<div class="fact"><dt>' + esc(label) + "</dt><dd>" + esc(value) + "</dd></div>";
+  function fact(label, value, cls) {
+    return '<div class="fact"><dt>' + esc(label) + "</dt>" +
+      '<dd' + (cls ? ' class="' + cls + '"' : "") + ">" + esc(value) + "</dd></div>";
   }
 
   function openModal(movie) {
     if (!movie) return;
     lastFocused = document.activeElement;
 
-    $("#modal-art").innerHTML = movie.poster
-      ? '<img src="' + esc(posterURL(movie)) + '" alt="">' : "";
+    var art = $("#modal-art");
+    art.innerHTML = movie.poster ? posterImg(movie) : "";
+    handlePosterErrors(art);
     $("#modal-title").textContent = movie.title;
 
-    var rows = fact("Watched", longDate(movie.watchedDate));
+    var rows = fact("Watched", longDate(movie.watchedDate), true);
+
     var place = venue(movie);
     if (place) rows += fact("Theatre", place);
+
+    // Screen and seat read as one line when both are filled in.
+    var seat = [
+      movie.screen ? (/^\d+$/.test(String(movie.screen).trim())
+        ? "Screen " + movie.screen : String(movie.screen)) : "",
+      movie.seat ? "Seat " + movie.seat : ""
+    ].filter(Boolean).join(" · ");
+    if (seat) rows += fact("Seat", seat, "num");
+
     if (movie.language) rows += fact("Language", movie.language);
-    if (movie.year) rows += fact("Released", String(movie.year));
-    if (movie.format) rows += fact("Format", movie.format + (movie.rerelease ? " · Re-release" : ""));
-    else if (movie.rerelease) rows += fact("Format", "Re-release");
+    if (movie.year) rows += fact("Released", String(movie.year), "num");
+
+    var fmt = [movie.format, movie.rerelease ? "Re-release" : ""]
+      .filter(Boolean).join(" · ");
+    if (fmt) rows += fact("Format", fmt);
+
+    var price = priceOf(movie);
+    if (price != null) rows += fact("Ticket", money(price), "money");
+
     $("#modal-facts").innerHTML = rows;
+
+    var note = $("#modal-note");
+    note.textContent = movie.note || "";
+    note.hidden = !movie.note;
 
     $("#modal").hidden = false;
     document.body.style.overflow = "hidden";
@@ -181,15 +278,77 @@
     if (lastFocused && lastFocused.focus) lastFocused.focus();
   }
 
-  function onModalKey(e) {
-    if (e.key === "Escape") closeModal();
+  function onModalKey(e) { if (e.key === "Escape") closeModal(); }
+
+  /* -------------------------- Statistics -------------------------- */
+
+  function renderStats(movies) {
+    var section = $("#stats");
+    if (!movies.length) { section.hidden = true; return; }
+    section.hidden = false;
+
+    var langs = countBy(movies, "language");
+    var priced = movies.map(priceOf).filter(function (p) { return p != null; });
+    var spend = priced.reduce(function (a, b) { return a + b; }, 0);
+
+    var cells =
+      cell("Films archived", String(movies.length)) +
+      cell("Languages", String(Object.keys(langs).length)) +
+      cell("Years on record", yearSpan(movies));
+
+    if (priced.length) {
+      cells += cell("Total spent", money(spend),
+        priced.length === movies.length
+          ? "across every ticket"
+          : "across " + priced.length + " of " + movies.length + " tickets", "money");
+      cells += cell("Average ticket", money(spend / priced.length), null, "money");
+    } else {
+      var rr = movies.filter(function (m) { return m.rerelease; }).length;
+      cells += cell("Re-releases", String(rr), "seen on the big screen again");
+    }
+
+    $("#stats-grid").innerHTML = cells;
+
+    var langPairs = Object.keys(langs)
+      .map(function (k) { return [k, langs[k]]; })
+      .sort(function (a, b) { return b[1] - a[1]; });
+
+    var byYear = {};
+    movies.forEach(function (m) {
+      var y = watchedYear(m);
+      byYear[y] = (byYear[y] || 0) + 1;
+    });
+    var yearPairs = Object.keys(byYear).map(Number)
+      .sort(function (a, b) { return b - a; })
+      .map(function (y) { return [String(y), byYear[y]]; });
+
+    $("#bars-lang").innerHTML = '<p class="bars__title">By language</p>' + bars(langPairs);
+    $("#bars-year").innerHTML = '<p class="bars__title">By year</p>' + bars(yearPairs);
+  }
+
+  function cell(label, value, sub, cls) {
+    return '<dl class="cell"><dt>' + esc(label) + "</dt>" +
+      '<dd' + (cls ? ' class="' + cls + '"' : "") + ">" + esc(value) +
+      (sub ? "<small>" + esc(sub) + "</small>" : "") + "</dd></dl>";
+  }
+
+  function bars(pairs) {
+    var max = Math.max.apply(null, pairs.map(function (p) { return p[1]; }));
+    return pairs.map(function (p) {
+      var pct = Math.round((p[1] / max) * 100);
+      return (
+        '<div class="bar">' +
+          '<span class="bar__label">' + esc(p[0]) + "</span>" +
+          '<span class="bar__track"><span class="bar__fill" style="width:' + pct + '%"></span></span>' +
+          '<span class="bar__n">' + p[1] + "</span>" +
+        "</div>"
+      );
+    }).join("");
   }
 
   /* --------------------------- Filtering -------------------------- */
 
-  function sortKey(m) {
-    return String(m.watchedDate || (m.year + "-12-31"));
-  }
+  function sortKey(m) { return String(m.watchedDate || (m.year + "-12-31")); }
 
   function apply() {
     var q = state.q.trim().toLowerCase();
@@ -198,8 +357,8 @@
       if (state.year !== "all" && String(watchedYear(m)) !== state.year) return false;
       if (state.lang !== "all" && (m.language || "") !== state.lang) return false;
       if (!q) return true;
-      var hay = [m.title, m.language, m.theatre || m.theater, m.city, watchedYear(m)]
-        .join(" ").toLowerCase();
+      var hay = [m.title, m.language, m.theatre || m.theater, m.city,
+                 m.note, watchedYear(m)].join(" ").toLowerCase();
       return hay.indexOf(q) !== -1;
     });
 
@@ -210,21 +369,13 @@
     });
 
     render(list);
+    renderStats(list);
 
     var filtered = q || state.year !== "all" || state.lang !== "all";
     $("#summary").textContent = filtered
       ? list.length + " of " + ALL.length + " films"
-      : summaryLine(ALL);
+      : ALL.length + " films";
     $("#clear").hidden = !filtered;
-  }
-
-  function summaryLine(movies) {
-    var langs = {};
-    movies.forEach(function (m) { if (m.language) langs[m.language] = 1; });
-    var years = movies.map(watchedYear).filter(Boolean);
-    var lo = Math.min.apply(null, years), hi = Math.max.apply(null, years);
-    return movies.length + " films · " + Object.keys(langs).length + " languages · " +
-      (lo === hi ? lo : lo + "–" + hi);
   }
 
   /* --------------------------- Controls --------------------------- */
@@ -253,6 +404,7 @@
     }
     ALL = movies;
 
+    buildHero(movies);
     buildFilters(movies);
     apply();
 
@@ -292,8 +444,7 @@
 
   function load() {
     if (Array.isArray(window.ACMovies)) init(window.ACMovies);
-    else $("#gallery").innerHTML =
-      '<p class="note">data/movies.js is missing or malformed.</p>';
+    else $("#gallery").innerHTML = '<p class="note">data/movies.js is missing or malformed.</p>';
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", load);

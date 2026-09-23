@@ -18,10 +18,29 @@
 //   theatre     (required) — hall/theatre name (shown under the title)
 //   city        (required) — appended after the theatre
 //   rerelease   optional   — true shows a "Re-release" pill
+//   price       optional   — ticket price in rupees, e.g. 187.70; also feeds
+//                            "Total spent" / "Average ticket" in the statistics
+//   screen      optional   — "2" renders as "Screen 2"; "Audi 2" prints as written
+//   seat        optional   — seat number, e.g. "F9"; shown beside the screen
+//   note        optional   — a line about the screening; searchable
 //
 // NOTE: Tweak any watchedDate and the order updates itself.
 
 window.ACMovies = [
+  {
+    "title": "The Paradise",
+    "year": 2026,
+    "watchedDate": "2026-09-24",
+    "language": "Telugu",
+    "format": "2D",
+    "theatre": "INOX Z Square",
+    "city": "Kanpur",
+    "poster": "The_Paradise_2026.webp",
+    "price": 187.70,
+    "screen": "2",
+    "seat": "F9",
+    "note": "First day."
+  },
   {
     "title": "Resident Evil",
     "year": 2026,
