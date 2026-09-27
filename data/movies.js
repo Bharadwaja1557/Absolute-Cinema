@@ -28,12 +28,26 @@
 
 window.ACMovies = [
   {
+    "title": "Avengers Endgame: Encore",
+    "year": 2026,
+    "watchedDate": "2026-09-26",
+    "language": "English",
+    "format": "3D",
+    "theatre": "INOX Z Square",
+    "city": "Kanpur",
+    "poster": "Avengers_Endgame_Encore_2026.webp",
+    "price": 113.72,
+    "screen": "3",
+    "seat": "C7",
+    "rerelease": true
+  },
+  {
     "title": "The Paradise",
     "year": 2026,
     "watchedDate": "2026-09-24",
     "language": "Telugu",
     "format": "2D",
-    "theatre": "INOX Z Square",
+    "theatre": "Ratan Elegance",
     "city": "Kanpur",
     "poster": "The_Paradise_2026.webp",
     "price": 187.70,
