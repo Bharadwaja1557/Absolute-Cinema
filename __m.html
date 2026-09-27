@@ -1,0 +1,39 @@
+<!doctype html><meta charset="utf-8">
+<style>
+ body{margin:0;background:#111;color:#fff;font:15px monospace}
+ iframe{border:0;position:absolute;left:-9999px;height:900px}
+ pre{padding:14px;line-height:1.7}
+</style>
+<pre id="out">auditing…</pre>
+<script>
+var WIDTHS=[320,360,390,414,600,768,1024];
+var out=document.getElementById('out'), lines=[], i=0;
+function next(){
+  if(i>=WIDTHS.length){ out.textContent=lines.join('\n'); return; }
+  var W=WIDTHS[i++];
+  var f=document.createElement('iframe');
+  f.style.width=W+'px';
+  f.src='http://localhost:8781/reboot2/';
+  f.onload=function(){
+    var d=f.contentDocument, w=f.contentWindow;
+    setTimeout(function(){
+      d.querySelectorAll('[data-n]')[0].click();
+      setTimeout(function(){
+        var vw=w.innerWidth, sw=d.documentElement.scrollWidth, bad=[];
+        d.querySelectorAll('body *').forEach(function(e){
+          var r=e.getBoundingClientRect();
+          if(r.right>vw+0.5&&r.width>0)
+            bad.push(e.tagName.toLowerCase()+'.'+String(e.className||'').split(' ')[0]);
+        });
+        var uniq=bad.filter(function(v,k,a){return a.indexOf(v)===k;}).slice(0,4);
+        lines.push('w='+String(W).padStart(5)+'  vw='+String(vw).padStart(5)+
+                   '  scrollW='+String(sw).padStart(5)+
+                   (sw>vw ? '  OVERFLOW -> '+uniq.join(', ') : '  ok'));
+        f.remove(); next();
+      },500);
+    },2200);
+  };
+  document.body.appendChild(f);
+}
+next();
+</script>

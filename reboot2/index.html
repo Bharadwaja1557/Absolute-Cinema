@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Absolute Cinema — Theatre Archive</title>
+  <meta name="description" content="A personal archive of every film watched in a theatre." />
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' fill='%230a0a0a'/><rect x='9' y='7' width='14' height='18' fill='%23d94a3a'/></svg>" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111;
+      --surface-2: #171717;
+      --text: #f1f1ed;
+      --muted: #8b8b85;
+      --line: #292929;
+      --accent: #d94a3a;
+
+      --display: "Space Grotesk", sans-serif;
+      --sans: "DM Sans", sans-serif;
+      --mono: "DM Mono", monospace;
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+    }
+
+    ::selection { background: var(--text); color: var(--bg); }
+
+    img { display: block; max-width: 100%; }
+
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+    /* Static film grain. No animation. */
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .035;
+      z-index: 20;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.9'/%3E%3C/svg%3E");
+    }
+
+    /* ------------------------- Header ------------------------- */
+
+    header {
+      max-width: 1400px;
+      margin: auto;
+      padding: 26px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      font-family: var(--display);
+      font-weight: 700;
+      letter-spacing: -.04em;
+      font-size: 20px;
+    }
+
+    nav {
+      display: flex;
+      gap: 28px;
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    nav a { color: var(--muted); text-decoration: none; transition: color .2s ease; }
+    nav a:hover { color: var(--text); }
+
+    main { max-width: 1400px; margin: auto; padding: 0 36px 80px; }
+
+    /* -------------------------- Hero -------------------------- */
+
+    .hero {
+      min-height: 590px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      font-family: var(--mono);
+      color: var(--accent);
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-family: var(--display);
+      font-size: clamp(70px, 12vw, 170px);
+      line-height: .82;
+      letter-spacing: -.085em;
+      margin: 0;
+      max-width: 1050px;
+      font-weight: 600;
+    }
+
+    .hero-bottom {
+      margin-top: 55px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 40px;
+    }
+
+    .intro { max-width: 500px; color: var(--muted); line-height: 1.6; font-size: 15px; }
+
+    .count { text-align: right; font-family: var(--mono); }
+
+    .count strong {
+      display: block;
+      font-family: var(--display);
+      font-size: 70px;
+      line-height: .9;
+      letter-spacing: -.06em;
+    }
+
+    .count span {
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    /* ------------------------ Sections ------------------------ */
+
+    section { padding-top: 80px; }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+    }
+
+    .section-title {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .section-meta { color: var(--muted); font-family: var(--mono); font-size: 10px; text-align: right; }
+
+    /* ------------------------- Controls ------------------------ */
+
+    .controls button, .view-btn {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      padding: 9px 13px;
+      font-family: var(--mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+
+    .controls button:hover, .view-btn:hover, .view-btn.active {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .search {
+      position: relative;
+      display: flex;
+      align-items: center;
+      flex: 0 1 260px;
+    }
+
+    .search input,
+    .controls select {
+      width: 100%;
+      appearance: none;
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      padding: 9px 13px;
+      height: 33px;
+      transition: border-color .15s ease;
+    }
+
+    .search input { padding-left: 30px; }
+    .search input::placeholder { color: var(--muted); text-transform: uppercase; }
+    .search input::-webkit-search-cancel-button { display: none; }
+    .search input:hover, .controls select:hover,
+    .search input:focus, .controls select:focus { border-color: var(--muted); }
+
+    .search svg {
+      position: absolute;
+      left: 11px;
+      width: 12px; height: 12px;
+      fill: none; stroke: var(--muted); stroke-width: 2;
+      pointer-events: none;
+    }
+
+    .sel { position: relative; display: flex; align-items: center; }
+    .sel select { padding-right: 26px; cursor: pointer; }
+    .sel::after {
+      content: "";
+      position: absolute;
+      right: 11px;
+      width: 5px; height: 5px;
+      border-right: 1px solid var(--muted);
+      border-bottom: 1px solid var(--muted);
+      transform: translateY(-2px) rotate(45deg);
+      pointer-events: none;
+    }
+
+    .view-switcher {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 30px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .view-btn { min-width: 105px; }
+
+    .archive-view.hidden { display: none; }
+
+    /* ------------------------ Poster grid ---------------------- */
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .film {
+      cursor: pointer;
+      border: 0;
+      background: none;
+      padding: 0;
+      text-align: left;
+      color: inherit;
+      font: inherit;
+      text-transform: none;
+      letter-spacing: normal;
+      display: block;
+      width: 100%;
+    }
+
+    .poster {
+      position: relative;
+      aspect-ratio: 2 / 3;
+      background: #1b1b1b;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: saturate(.85);
+      transition: transform .45s cubic-bezier(.2,.7,.2,1), filter .45s ease;
+    }
+
+    .film:hover img, .film:focus-visible img { transform: scale(1.045); filter: saturate(1); }
+
+    /* Poster that could not load falls back to the title. */
+    .poster-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 14px;
+      text-align: center;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10px;
+      line-height: 1.5;
+      text-transform: uppercase;
+    }
+
+    .number {
+      position: absolute;
+      top: 9px;
+      left: 9px;
+      padding: 5px 7px;
+      background: rgba(0,0,0,.75);
+      color: #fff;
+      font: 10px var(--mono);
+      z-index: 2;
+    }
+
+    .tag {
+      position: absolute;
+      top: 9px;
+      right: 9px;
+      padding: 5px 7px;
+      background: var(--accent);
+      color: #fff;
+      font: 10px var(--mono);
+      text-transform: uppercase;
+      z-index: 2;
+    }
+
+    .film-title { font-size: 14px; font-weight: 600; letter-spacing: -.02em; }
+
+    .film-meta {
+      margin-top: 4px;
+      color: var(--muted);
+      font: 10px var(--mono);
+      text-transform: uppercase;
+    }
+
+    /* ------------------------- Timeline ------------------------ */
+
+    .timeline { position: relative; padding-left: 28px; border-left: 1px solid var(--line); }
+
+    .year { margin-bottom: 65px; }
+    .year:last-child { margin-bottom: 0; }
+
+    .year-label {
+      margin-left: -29px;
+      padding-left: 28px;
+      border-left: 2px solid var(--accent);
+      font: 600 32px var(--display);
+      letter-spacing: -.05em;
+      margin-bottom: 22px;
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+    }
+
+    .year-count {
+      font: 10px var(--mono);
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .timeline-row {
+      display: grid;
+      grid-template-columns: 90px 55px 1fr auto;
+      align-items: center;
+      gap: 20px;
+      border-top: 1px solid var(--line);
+      padding: 15px 0;
+      width: 100%;
+      cursor: pointer;
+      border-left: 0; border-right: 0; border-bottom: 0;
+      background: none;
+      color: inherit;
+      font: inherit;
+      text-transform: none;
+      text-align: left;
+      transition: background .15s ease;
+    }
+
+    .timeline-row:hover { background: var(--surface); }
+
+    .timeline-date { color: var(--muted); font: 10px var(--mono); }
+
+    .tl-poster {
+      display: block;
+      width: 45px;
+      aspect-ratio: 2 / 3;
+      background: #1b1b1b;
+      overflow: hidden;
+    }
+
+    .timeline-poster { width: 100%; height: 100%; object-fit: cover; }
+
+    .tl-poster-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 3px;
+      text-align: center;
+      color: var(--muted);
+      font: 7px var(--mono);
+      line-height: 1.2;
+      text-transform: uppercase;
+      overflow: hidden;
+    }
+
+    .timeline-title { display: block; font-size: 14px; font-weight: 600; letter-spacing: -.02em; }
+
+    .timeline-sub {
+      display: block;
+      color: var(--muted);
+      font: 10px var(--mono);
+      margin-top: 4px;
+      text-transform: uppercase;
+    }
+
+    .timeline-num { color: var(--muted); font: 10px var(--mono); }
+
+    /* ------------------------- Compact ------------------------- */
+
+    .compact-table-wrap {
+      overflow-x: auto;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .compact-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+      font-size: 13px;
+    }
+
+    .compact-table th {
+      color: var(--muted);
+      font: 10px var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      text-align: left;
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 400;
+    }
+
+    .compact-table td { padding: 15px 12px; border-bottom: 1px solid var(--line); }
+
+    /* Keep the film and theatre columns from drifting apart on wide screens. */
+    .compact-table th:nth-child(1), .compact-table td:nth-child(1) { width: 62px; }
+    .compact-table th:nth-child(2), .compact-table td:nth-child(2) { width: 30%; }
+    .compact-table th:nth-child(3), .compact-table td:nth-child(3) { width: 108px; }
+    .compact-table th:nth-child(5), .compact-table td:nth-child(5) { width: 78px; }
+    .compact-table th:nth-child(6), .compact-table td:nth-child(6) { width: 96px; }
+    .compact-table tbody tr { cursor: pointer; transition: background .15s ease; }
+    .compact-table tbody tr:hover { background: var(--surface); }
+
+    .compact-table .num,
+    .compact-table .date,
+    .compact-table .format,
+    .compact-table .lang { color: var(--muted); font: 10px var(--mono); text-transform: uppercase; }
+
+    .compact-table .title { font-weight: 600; }
+
+    /* -------------------------- Stats -------------------------- */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-top: 1px solid var(--line);
+      border-left: 1px solid var(--line);
+    }
+
+    .stat {
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .stat strong {
+      display: block;
+      font: 500 42px var(--display);
+      letter-spacing: -.05em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font: 10px var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .stat em {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font: 10px var(--mono);
+      font-style: normal;
+      opacity: .7;
+    }
+
+    .breakdown {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 50px;
+      margin-top: 50px;
+    }
+
+    .breakdown h3 {
+      font: 400 10px var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      color: var(--muted);
+      margin: 0 0 16px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 95px 1fr 28px;
+      align-items: center;
+      gap: 14px;
+      padding: 7px 0;
+      font-size: 13px;
+    }
+
+    .bar-label { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { height: 3px; background: var(--surface-2); }
+    .bar-fill { display: block; height: 100%; background: var(--accent); }
+    .bar-n { font: 10px var(--mono); color: var(--muted); text-align: right; }
+
+    /* -------------------------- Footer ------------------------- */
+
+    footer {
+      max-width: 1400px;
+      margin: auto;
+      padding: 40px 36px 50px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font: 10px var(--mono);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      text-transform: uppercase;
+    }
+
+    footer a { color: inherit; text-decoration: none; }
+    footer a:hover { color: var(--text); }
+
+    /* --------------------------- Ticket ------------------------- */
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.82);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 25px;
+    }
+
+    .modal.open { display: flex; }
+
+    .ticket {
+      /* The close button is absolutely positioned against this; without it
+         the button escapes to the fixed .modal's corner. */
+      position: relative;
+      width: min(850px, 100%);
+      min-width: 0;
+      max-height: 100%;
+      overflow: auto;
+      background: #eee;
+      color: #101010;
+      display: grid;
+      grid-template-columns: minmax(0, 260px) minmax(0, 1fr);
+      box-shadow: 0 30px 100px rgba(0,0,0,.6);
+    }
+
+    .ticket-poster-wrap { background: #ddd; min-height: 390px; }
+
+    .ticket-poster { width: 100%; height: 100%; object-fit: cover; min-height: 390px; }
+
+    .ticket-poster-fallback {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      min-height: 390px;
+      padding: 20px;
+      text-align: center;
+      font: 11px var(--mono);
+      text-transform: uppercase;
+      color: #777;
+    }
+
+    .ticket-info {
+      padding: 34px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 26px;
+    }
+
+    .ticket-label {
+      font: 10px var(--mono);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #777;
+    }
+
+    .ticket h2 {
+      font: 600 46px var(--display);
+      line-height: .95;
+      letter-spacing: -.06em;
+      margin: 12px 0 30px;
+      padding-right: 40px;
+    }
+
+    .details {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      border-top: 1px dashed #aaa;
+      padding-top: 22px;
+    }
+
+    .detail strong {
+      display: block;
+      font: 13px var(--mono);
+      margin-top: 5px;
+      word-break: break-word;
+    }
+
+    .ticket-note {
+      margin-top: 22px;
+      border-top: 1px dashed #aaa;
+      padding-top: 18px;
+      font-size: 14px;
+      line-height: 1.55;
+      color: #333;
+    }
+
+    .ticket-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      font: 12px var(--mono);
+      color: #101010;
+    }
+
+    .ticket-stub { color: #777; }
+
+    .close {
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      background: #111;
+      color: #fff;
+      border: 0;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      font-size: 16px;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 3;
+    }
+
+    .close:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    .empty {
+      padding: 70px 0;
+      text-align: center;
+      color: var(--muted);
+      font: 11px var(--mono);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    /* ------------------------ Responsive ------------------------ */
+
+    @media (max-width: 1100px) {
+      .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 700px) {
+      header, main, footer { padding-left: 18px; padding-right: 18px; }
+      header { padding-top: 20px; padding-bottom: 20px; }
+      nav { gap: 12px; }
+      .hero { min-height: 500px; }
+      h1 { font-size: 70px; }
+      .hero-bottom { grid-template-columns: 1fr; }
+      .count { text-align: left; }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 15px; }
+      .stat { padding: 20px 16px; }
+      .stat strong { font-size: 30px; }
+      .breakdown { gap: 34px; margin-top: 34px; }
+      .search { flex: 1 1 100%; }
+      .modal { padding: 0; }
+      .ticket { grid-template-columns: minmax(0, 1fr); max-height: 100%; }
+      .details { gap: 16px 14px; }
+      .ticket-poster-wrap, .ticket-poster, .ticket-poster-fallback { min-height: 260px; }
+      .ticket-poster { max-height: 340px; }
+      .ticket h2 { font-size: 36px; }
+      .ticket-info { padding: 26px 22px 30px; }
+      .details { gap: 18px; }
+      .timeline-row { grid-template-columns: 62px 42px 1fr; }
+      .tl-poster { width: 38px; }
+      .timeline-num { display: none; }
+      footer { flex-direction: column; gap: 10px; }
+      section { padding-top: 60px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .poster img { transition: none; }
+      .film:hover img, .film:focus-visible img { transform: none; }
+    }
+  </style>
+</head>
+<body id="top">
+  <div class="noise" aria-hidden="true"></div>
+
+  <header>
+    <div class="brand">ABSOLUTE CINEMA</div>
+    <nav>
+      <a href="#archive">Archive</a>
+      <a href="#stats">Numbers</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow" id="heroEyebrow">Personal Theatre Archive</div>
+      <h1>ABSOLUTE<br>CINEMA.</h1>
+
+      <div class="hero-bottom">
+        <div class="intro">
+          A personal archive of every film I've experienced in a theatre.
+          Tickets, screens, dates, memories — one film at a time.
+        </div>
+
+        <div class="count">
+          <strong id="heroCount">—</strong>
+          <span>Films watched</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="archive">
+      <div class="section-head">
+        <div class="section-title">Archive</div>
+        <div class="section-meta" id="viewMeta">—</div>
+      </div>
+
+      <div class="controls">
+        <label class="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" /><line x1="16.5" y1="16.5" x2="21" y2="21" />
+          </svg>
+          <input id="search" type="search" placeholder="Search" autocomplete="off"
+            spellcheck="false" aria-label="Search films" />
+        </label>
+
+        <span class="sel">
+          <select id="filterYear" aria-label="Filter by year"><option value="all">All years</option></select>
+        </span>
+
+        <span class="sel">
+          <select id="filterLang" aria-label="Filter by language"><option value="all">All languages</option></select>
+        </span>
+
+        <button id="sortBtn" type="button">Newest first</button>
+        <button id="clearBtn" type="button" hidden>Clear</button>
+      </div>
+
+      <div class="view-switcher" role="tablist" aria-label="Archive views">
+        <button class="view-btn active" data-view="grid" role="tab" aria-selected="true">Poster Grid</button>
+        <button class="view-btn" data-view="timeline" role="tab" aria-selected="false">Timeline</button>
+        <button class="view-btn" data-view="compact" role="tab" aria-selected="false">Compact</button>
+      </div>
+
+      <div id="gridView" class="archive-view"></div>
+      <div id="timelineView" class="archive-view hidden"></div>
+
+      <div id="compactView" class="archive-view hidden">
+        <div class="compact-table-wrap">
+          <table class="compact-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Film</th>
+                <th>Date</th>
+                <th>Theatre</th>
+                <th>Format</th>
+                <th>Language</th>
+              </tr>
+            </thead>
+            <tbody id="compactBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="stats">
+      <div class="section-head">
+        <div class="section-title">Numbers</div>
+        <div class="section-meta">A life in cinemas</div>
+      </div>
+
+      <div class="stats" id="statsGrid"></div>
+      <div class="breakdown" id="breakdown"></div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Absolute Cinema</span>
+    <span id="footCount">—</span>
+    <a href="#top">Back to top ↑</a>
+  </footer>
+
+  <div class="modal" id="modal">
+    <div class="ticket" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <button class="close" id="close" type="button" aria-label="Close">×</button>
+      <div class="ticket-poster-wrap" id="modalPoster"></div>
+      <div class="ticket-info">
+        <div>
+          <div class="ticket-label">Theatre Ticket · Personal Archive</div>
+          <h2 id="modalTitle"></h2>
+          <div class="details" id="modalDetails"></div>
+          <p class="ticket-note" id="modalNote" hidden></p>
+        </div>
+        <div class="ticket-foot">
+          <span class="ticket-stub" id="modalStub"></span>
+          <span id="modalNumber"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shared with the live site. If this folder is promoted to the repo root,
+       change this to "data/movies.js". -->
+  <script src="../data/movies.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

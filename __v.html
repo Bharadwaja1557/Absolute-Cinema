@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8">
+<style>html,body{margin:0;height:100%}iframe{border:0;width:100%;height:100vh}</style>
+<iframe id="f" src="http://localhost:8781/reboot2/"></iframe>
+<script>
+var q = new URLSearchParams(location.search);
+document.getElementById('f').addEventListener('load', function(){
+  var d=this.contentDocument, w=this.contentWindow;
+  setTimeout(function(){
+    d.documentElement.style.scrollBehavior='auto';
+    var v=q.get('view');
+    if(v) d.querySelector('.view-btn[data-view="'+v+'"]').click();
+    var y=q.get('y'); if(y) w.scrollTo(0, +y);
+    if(q.get('modal')) d.querySelectorAll('[data-n]')[0].click();
+  }, 3000);
+});
+</script>

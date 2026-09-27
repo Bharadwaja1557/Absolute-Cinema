@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MB Cinema — Theatre Archive</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111;
+      --surface-2: #171717;
+      --text: #f1f1ed;
+      --muted: #8b8b85;
+      --line: #292929;
+      --accent: #d94a3a;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "DM Sans", sans-serif;
+      min-height: 100vh;
+    }
+
+    ::selection {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .noise {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .035;
+      z-index: 20;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.9'/%3E%3C/svg%3E");
+    }
+
+    header {
+      max-width: 1400px;
+      margin: auto;
+      padding: 26px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      font-family: "Space Grotesk", sans-serif;
+      font-weight: 700;
+      letter-spacing: -.04em;
+      font-size: 20px;
+    }
+
+    nav {
+      display: flex;
+      gap: 28px;
+      font-family: "DM Mono", monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .2s ease;
+    }
+
+    nav a:hover { color: var(--text); }
+
+    main {
+      max-width: 1400px;
+      margin: auto;
+      padding: 0 36px 80px;
+    }
+
+    .hero {
+      min-height: 590px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow {
+      font-family: "DM Mono", monospace;
+      color: var(--accent);
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    h1 {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(70px, 12vw, 170px);
+      line-height: .82;
+      letter-spacing: -.085em;
+      margin: 0;
+      max-width: 1050px;
+      font-weight: 600;
+    }
+
+    .hero-bottom {
+      margin-top: 55px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 40px;
+    }
+
+    .intro {
+      max-width: 500px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .count {
+      text-align: right;
+      font-family: "DM Mono", monospace;
+    }
+
+    .count strong {
+      display: block;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 70px;
+      line-height: .9;
+      letter-spacing: -.06em;
+    }
+
+    .count span {
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    section { padding-top: 80px; }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+    }
+
+    .section-title {
+      font-family: "DM Mono", monospace;
+      font-size: 11px;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .section-meta {
+      color: var(--muted);
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      padding: 9px 13px;
+      font-family: "DM Mono", monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    button:hover, button.active {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .film {
+      cursor: pointer;
+    }
+
+    .poster {
+      position: relative;
+      aspect-ratio: 2 / 3;
+      background: #1b1b1b;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: saturate(.85);
+      transition: transform .45s cubic-bezier(.2,.7,.2,1), filter .45s ease;
+    }
+
+    .film:hover img {
+      transform: scale(1.045);
+      filter: saturate(1);
+    }
+
+    .number {
+      position: absolute;
+      top: 9px;
+      left: 9px;
+      padding: 5px 7px;
+      background: rgba(0,0,0,.75);
+      color: #fff;
+      font: 10px "DM Mono", monospace;
+      z-index: 2;
+    }
+
+    .film-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -.02em;
+    }
+
+    .film-meta {
+      margin-top: 4px;
+      color: var(--muted);
+      font: 10px "DM Mono", monospace;
+      text-transform: uppercase;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .stat {
+      padding: 28px 20px;
+      border-right: 1px solid var(--line);
+    }
+
+    .stat:last-child { border-right: 0; }
+
+    .stat strong {
+      display: block;
+      font: 500 42px "Space Grotesk", sans-serif;
+      letter-spacing: -.05em;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font: 10px "DM Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+      border-left: 1px solid var(--line);
+    }
+
+    .year {
+      margin-bottom: 65px;
+    }
+
+    .year-label {
+      font: 600 32px "Space Grotesk", sans-serif;
+      letter-spacing: -.05em;
+      margin-bottom: 22px;
+    }
+
+    .timeline-row {
+      display: grid;
+      grid-template-columns: 80px 100px 1fr;
+      align-items: center;
+      gap: 20px;
+      border-top: 1px solid var(--line);
+      padding: 15px 0;
+    }
+
+    .timeline-date {
+      color: var(--muted);
+      font: 10px "DM Mono", monospace;
+    }
+
+    .timeline-poster {
+      width: 50px;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+    }
+
+    .timeline-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .timeline-sub {
+      color: var(--muted);
+      font: 10px "DM Mono", monospace;
+      margin-top: 4px;
+    }
+
+    footer {
+      max-width: 1400px;
+      margin: auto;
+      padding: 40px 36px 50px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font: 10px "DM Mono", monospace;
+      display: flex;
+      justify-content: space-between;
+      text-transform: uppercase;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.82);
+      backdrop-filter: blur(10px);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 25px;
+    }
+
+    .modal.open { display: flex; }
+
+    .ticket {
+      width: min(850px, 100%);
+      background: #eee;
+      color: #101010;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      box-shadow: 0 30px 100px rgba(0,0,0,.6);
+    }
+
+    .ticket-poster {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      min-height: 390px;
+    }
+
+    .ticket-info {
+      padding: 34px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .ticket-label {
+      font: 10px "DM Mono", monospace;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: #777;
+    }
+
+    .ticket h2 {
+      font: 600 46px "Space Grotesk", sans-serif;
+      line-height: .95;
+      letter-spacing: -.06em;
+      margin: 12px 0 35px;
+    }
+
+    .details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      border-top: 1px dashed #aaa;
+      padding-top: 22px;
+    }
+
+    .detail strong {
+      display: block;
+      font: 13px "DM Mono", monospace;
+      margin-top: 5px;
+    }
+
+    .ticket-number {
+      position: absolute;
+      right: 34px;
+      bottom: 30px;
+      font: 12px "DM Mono", monospace;
+    }
+
+    .close {
+      position: absolute;
+      right: 18px;
+      top: 18px;
+      background: #111;
+      color: #fff;
+      border: 0;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+    }
+
+
+    .view-switcher {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 30px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 14px;
+    }
+
+    .view-btn {
+      min-width: 105px;
+    }
+
+    .archive-view.hidden {
+      display: none;
+    }
+
+    .timeline {
+      position: relative;
+      padding-left: 28px;
+      border-left: 1px solid var(--line);
+    }
+
+    .year {
+      margin-bottom: 65px;
+    }
+
+    .year-label {
+      margin-left: -29px;
+      padding-left: 28px;
+      border-left: 2px solid var(--accent);
+      font: 600 32px "Space Grotesk", sans-serif;
+      letter-spacing: -.05em;
+      margin-bottom: 22px;
+    }
+
+    .timeline-row {
+      display: grid;
+      grid-template-columns: 90px 55px 1fr;
+      align-items: center;
+      gap: 20px;
+      border-top: 1px solid var(--line);
+      padding: 15px 0;
+    }
+
+    .timeline-date {
+      color: var(--muted);
+      font: 10px "DM Mono", monospace;
+    }
+
+    .timeline-poster {
+      width: 45px;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+    }
+
+    .timeline-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .timeline-sub {
+      color: var(--muted);
+      font: 10px "DM Mono", monospace;
+      margin-top: 4px;
+    }
+
+    .compact-table-wrap {
+      overflow-x: auto;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .compact-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+      font-size: 13px;
+    }
+
+    .compact-table th {
+      color: var(--muted);
+      font: 10px "DM Mono", monospace;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      text-align: left;
+      padding: 14px 12px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 400;
+    }
+
+    .compact-table td {
+      padding: 15px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .compact-table tbody tr {
+      cursor: pointer;
+      transition: background .15s ease;
+    }
+
+    .compact-table tbody tr:hover {
+      background: var(--surface);
+    }
+
+    .compact-table .num,
+    .compact-table .date,
+    .compact-table .format,
+    .compact-table .rating {
+      color: var(--muted);
+      font: 10px "DM Mono", monospace;
+    }
+
+    .compact-table .title {
+      font-weight: 600;
+    }
+
+    @media (max-width: 1100px) {
+      .grid { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    @media (max-width: 700px) {
+      header, main, footer { padding-left: 18px; padding-right: 18px; }
+      header { padding-top: 20px; padding-bottom: 20px; }
+      nav { gap: 12px; }
+      nav a:nth-child(3) { display: none; }
+      .hero { min-height: 500px; }
+      h1 { font-size: 70px; }
+      .hero-bottom { grid-template-columns: 1fr; }
+      .count { text-align: left; }
+      .grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .stat:nth-child(2) { border-right: 0; }
+      .stat:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+      .ticket { grid-template-columns: 1fr; max-height: 90vh; overflow: auto; }
+      .ticket-poster { min-height: 280px; max-height: 360px; }
+      .ticket h2 { font-size: 36px; }
+      .timeline-row { grid-template-columns: 60px 60px 1fr; }
+      footer { flex-direction: column; gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+
+  <header>
+    <div class="brand">ABSOLUTE CINEMA</div>
+    <nav>
+      <a href="#archive">Archive</a>
+      <a href="#stats">Stats</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">Personal Theatre Archive · 2019—2026</div>
+      <h1>ABSOLUTE<br>CINEMA.</h1>
+
+      <div class="hero-bottom">
+        <div class="intro">
+          A personal archive of every film I've experienced in a theatre.
+          Tickets, screens, dates, memories — one film at a time.
+        </div>
+
+        <div class="count">
+          <strong>61</strong>
+          <span>Films watched</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="archive">
+      <div class="section-head">
+        <div class="section-title">Archive</div>
+        <div class="section-meta" id="viewMeta">61 films · poster grid</div>
+      </div>
+
+      <div class="view-switcher" role="tablist" aria-label="Archive views">
+        <button class="view-btn active" data-view="grid">Poster Grid</button>
+        <button class="view-btn" data-view="timeline">Timeline</button>
+        <button class="view-btn" data-view="compact">Compact</button>
+      </div>
+
+      <div id="gridView" class="archive-view"></div>
+
+      <div id="timelineView" class="archive-view hidden"></div>
+
+      <div id="compactView" class="archive-view hidden">
+        <div class="compact-table-wrap">
+          <table class="compact-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Film</th>
+                <th>Date</th>
+                <th>Theatre</th>
+                <th>Format</th>
+                <th>Rating</th>
+              </tr>
+            </thead>
+            <tbody id="compactBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="stats">
+      <div class="section-head">
+        <div class="section-title">Numbers</div>
+        <div class="section-meta">A life in cinemas</div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><strong>61</strong><span>Films</span></div>
+        <div class="stat"><strong>24</strong><span>Theatres</span></div>
+        <div class="stat"><strong>18</strong><span>This year</span></div>
+        <div class="stat"><strong>7</strong><span>Years</span></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <span>Absolute Cinema</span>
+    <span>61 films — and counting</span>
+  </footer>
+
+  <div class="modal" id="modal">
+    <div class="ticket">
+      <button class="close" id="close">×</button>
+      <img class="ticket-poster" id="modalPoster" src="" alt="" />
+      <div class="ticket-info">
+        <div>
+          <div class="ticket-label">Theatre Ticket · Personal Archive</div>
+          <h2 id="modalTitle"></h2>
+
+          <div class="details">
+            <div class="detail">
+              <div class="ticket-label">Date</div>
+              <strong id="modalDate"></strong>
+            </div>
+            <div class="detail">
+              <div class="ticket-label">Theatre</div>
+              <strong id="modalTheatre"></strong>
+            </div>
+            <div class="detail">
+              <div class="ticket-label">Format</div>
+              <strong id="modalFormat"></strong>
+            </div>
+            <div class="detail">
+              <div class="ticket-label">Rating</div>
+              <strong id="modalRating"></strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="ticket-number" id="modalNumber"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /*
+      Add your real films here. example entries with your 61 films.
+      Add more objects whenever you watch another film.
+
+      poster: image URL
+      title: movie title
+      year: used by the filters
+      date: date you watched it
+      theatre: theatre name
+      format: 2D / IMAX / 3D / 4DX etc.
+      rating: optional personal rating
+    */
+
+    const films = [
+      {
+        number: 61,
+        title: "Your Latest Film",
+        year: "2026",
+        date: "21 SEP 2026",
+        theatre: "PVR INOX",
+        format: "IMAX",
+        rating: "★★★★★",
+        poster: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&q=85"
+      },
+      {
+        number: 60,
+        title: "Another Film",
+        year: "2026",
+        date: "30 AUG 2026",
+        theatre: "CINEPOLIS",
+        format: "2D",
+        rating: "★★★★½",
+        poster: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800&q=85"
+      },
+      {
+        number: 59,
+        title: "Example Film",
+        year: "2026",
+        date: "15 AUG 2026",
+        theatre: "PVR INOX",
+        format: "2D",
+        rating: "★★★★",
+        poster: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&q=85"
+      },
+      {
+        number: 58,
+        title: "Midnight Screening",
+        year: "2026",
+        date: "02 AUG 2026",
+        theatre: "PVR INOX",
+        format: "2D",
+        rating: "★★★★½",
+        poster: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=800&q=85"
+      },
+      {
+        number: 57,
+        title: "The Big Screen",
+        year: "2026",
+        date: "19 JUL 2026",
+        theatre: "CINEPOLIS",
+        format: "3D",
+        rating: "★★★★★",
+        poster: "https://images.unsplash.com/photo-1518929458119-e5bf444c30f4?w=800&q=85"
+      },
+      {
+        number: 56,
+        title: "Late Show",
+        year: "2026",
+        date: "04 JUL 2026",
+        theatre: "PVR INOX",
+        format: "2D",
+        rating: "★★★½",
+        poster: "https://images.unsplash.com/photo-1586899028174-e7098604235b?w=800&q=85"
+      },
+      {
+        number: 55,
+        title: "Cinema Night",
+        year: "2025",
+        date: "28 DEC 2025",
+        theatre: "PVR INOX",
+        format: "IMAX",
+        rating: "★★★★★",
+        poster: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=800&q=85"
+      },
+      {
+        number: 54,
+        title: "The Screening",
+        year: "2025",
+        date: "15 DEC 2025",
+        theatre: "CINEPOLIS",
+        format: "2D",
+        rating: "★★★★",
+        poster: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=800&q=85"
+      },
+      {
+        number: 53,
+        title: "Saturday Cinema",
+        year: "2025",
+        date: "22 NOV 2025",
+        theatre: "PVR INOX",
+        format: "2D",
+        rating: "★★★★½",
+        poster: "https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=800&q=85"
+      },
+      {
+        number: 52,
+        title: "Film Night",
+        year: "2025",
+        date: "11 OCT 2025",
+        theatre: "PVR INOX",
+        format: "2D",
+        rating: "★★★★",
+        poster: "https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=800&q=85"
+      },
+      {
+        number: 51,
+        title: "Theatre Memory",
+        year: "2024",
+        date: "08 DEC 2024",
+        theatre: "PVR INOX",
+        format: "2D",
+        rating: "★★★★½",
+        poster: "https://images.unsplash.com/photo-1518929458119-e5bf444c30f4?w=800&q=85"
+      },
+      {
+        number: 50,
+        title: "Film #50",
+        year: "2024",
+        date: "14 SEP 2024",
+        theatre: "CINEPOLIS",
+        format: "2D",
+        rating: "★★★★★",
+        poster: "https://images.unsplash.com/photo-1586899028174-e7098604235b?w=800&q=85"
+      }
+    ];
+
+    const gridView = document.getElementById("gridView");
+    const timelineView = document.getElementById("timelineView");
+    const compactBody = document.getElementById("compactBody");
+    const viewMeta = document.getElementById("viewMeta");
+    const viewButtons = document.querySelectorAll(".view-btn");
+    const modal = document.getElementById("modal");
+
+    function filmCard(f) {
+      return `
+        <article class="film" data-number="${f.number}">
+          <div class="poster">
+            <span class="number">#${f.number}</span>
+            <img src="${f.poster}" alt="${f.title}" loading="lazy">
+          </div>
+          <div class="film-title">${f.title}</div>
+          <div class="film-meta">${f.date} · ${f.format}</div>
+        </article>
+      `;
+    }
+
+    function renderGrid() {
+      gridView.innerHTML = `<div class="grid">${films.map(filmCard).join("")}</div>`;
+      bindFilmClicks(gridView);
+    }
+
+    function renderTimeline() {
+      const groups = {};
+
+      films.forEach(f => {
+        if (!groups[f.year]) groups[f.year] = [];
+        groups[f.year].push(f);
+      });
+
+      const years = Object.keys(groups).sort((a, b) => Number(b) - Number(a));
+
+      timelineView.innerHTML = `
+        <div class="timeline">
+          ${years.map(year => `
+            <div class="year">
+              <div class="year-label">${year}</div>
+              ${groups[year].map(f => `
+                <div class="timeline-row film" data-number="${f.number}">
+                  <div class="timeline-date">${f.date}</div>
+                  <img class="timeline-poster" src="${f.poster}" alt="${f.title}" loading="lazy">
+                  <div>
+                    <div class="timeline-title">${f.title}</div>
+                    <div class="timeline-sub">${f.theatre} · ${f.format} · #${f.number}</div>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
+          `).join("")}
+        </div>
+      `;
+
+      bindFilmClicks(timelineView);
+    }
+
+    function renderCompact() {
+      compactBody.innerHTML = films.map(f => `
+        <tr data-number="${f.number}">
+          <td class="num">#${f.number}</td>
+          <td class="title">${f.title}</td>
+          <td class="date">${f.date}</td>
+          <td>${f.theatre}</td>
+          <td class="format">${f.format}</td>
+          <td class="rating">${f.rating}</td>
+        </tr>
+      `).join("");
+
+      compactBody.querySelectorAll("tr").forEach(row => {
+        row.addEventListener("click", () => {
+          const film = films.find(f => f.number === Number(row.dataset.number));
+          openModal(film);
+        });
+      });
+    }
+
+    function bindFilmClicks(container) {
+      container.querySelectorAll("[data-number]").forEach(card => {
+        card.addEventListener("click", () => {
+          const film = films.find(f => f.number === Number(card.dataset.number));
+          openModal(film);
+        });
+      });
+    }
+
+    function switchView(view) {
+      gridView.classList.toggle("hidden", view !== "grid");
+      timelineView.classList.toggle("hidden", view !== "timeline");
+      document.getElementById("compactView").classList.toggle("hidden", view !== "compact");
+
+      viewButtons.forEach(button => {
+        button.classList.toggle("active", button.dataset.view === view);
+      });
+
+      const labels = {
+        grid: "poster grid",
+        timeline: "timeline",
+        compact: "compact table"
+      };
+
+      viewMeta.textContent = `${films.length} films · ${labels[view]}`;
+    }
+
+    function openModal(film) {
+      document.getElementById("modalPoster").src = film.poster;
+      document.getElementById("modalPoster").alt = film.title;
+      document.getElementById("modalTitle").textContent = film.title;
+      document.getElementById("modalDate").textContent = film.date;
+      document.getElementById("modalTheatre").textContent = film.theatre;
+      document.getElementById("modalFormat").textContent = film.format;
+      document.getElementById("modalRating").textContent = film.rating;
+      document.getElementById("modalNumber").textContent = `ARCHIVE ENTRY #${film.number}`;
+      modal.classList.add("open");
+    }
+
+    viewButtons.forEach(button => {
+      button.addEventListener("click", () => switchView(button.dataset.view));
+    });
+
+    document.getElementById("close").addEventListener("click", () => {
+      modal.classList.remove("open");
+    });
+
+    modal.addEventListener("click", e => {
+      if (e.target === modal) modal.classList.remove("open");
+    });
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") modal.classList.remove("open");
+    });
+
+    renderGrid();
+    renderTimeline();
+    renderCompact();
+    switchView("grid");
+  </script>
+</body>
+</html>
